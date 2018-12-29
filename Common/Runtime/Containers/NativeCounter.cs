@@ -2,7 +2,7 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Native
+namespace BovineLabs.Common.Containers
 {
     using System;
     using System.Runtime.InteropServices;
@@ -39,21 +39,21 @@ namespace BovineLabs.Common.Native
             if (!UnsafeUtility.IsBlittable<int>())
                 throw new ArgumentException(string.Format("{0} used in NativeQueue<{0}> must be blittable", typeof(int)));
 #endif
-            m_AllocatorLabel = label;
+            this.m_AllocatorLabel = label;
 
             // Allocate native memory for a single integer
-            m_Counter = (int*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<int>(), 4, label);
+            this.m_Counter = (int*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<int>(), 4, label);
 
             // Create a dispose sentinel to track memory leaks. This also creates the AtomicSafetyHandle
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #if UNITY_2018_3_OR_NEWER
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, label);
+            DisposeSentinel.Create(out this.m_Safety, out this.m_DisposeSentinel, 0, label);
 #else
         DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0);
 #endif
 #endif
             // Initialize the count to 0 to avoid uninitialized data
-            Count = 0;
+            this.Count = 0;
         }
 
         public void Increment()
@@ -61,9 +61,9 @@ namespace BovineLabs.Common.Native
             // Verify that the caller has write permission on this data.
             // This is the race condition protection, without these checks the AtomicSafetyHandle is useless
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
 #endif
-            (*m_Counter)++;
+            (*this.m_Counter)++;
         }
 
         public int Count
@@ -73,23 +73,23 @@ namespace BovineLabs.Common.Native
                 // Verify that the caller has read permission on this data.
                 // This is the race condition protection, without these checks the AtomicSafetyHandle is useless
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
 #endif
-                return *m_Counter;
+                return *this.m_Counter;
             }
             set
             {
                 // Verify that the caller has write permission on this data. This is the race condition protection, without these checks the AtomicSafetyHandle is useless
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
 #endif
-                *m_Counter = value;
+                *this.m_Counter = value;
             }
         }
 
         public bool IsCreated
         {
-            get { return m_Counter != null; }
+            get { return this.m_Counter != null; }
         }
 
         public void Dispose()
@@ -97,14 +97,14 @@ namespace BovineLabs.Common.Native
             // Let the dispose sentinel know that the data has been freed so it does not report any memory leaks
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #if UNITY_2018_3_OR_NEWER
-            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+            DisposeSentinel.Dispose(ref this.m_Safety, ref this.m_DisposeSentinel);
 #else
         DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
 #endif
 #endif
 
-            UnsafeUtility.Free(m_Counter, m_AllocatorLabel);
-            m_Counter = null;
+            UnsafeUtility.Free(this.m_Counter, this.m_AllocatorLabel);
+            this.m_Counter = null;
         }
 
         public Concurrent ToConcurrent()
@@ -112,12 +112,12 @@ namespace BovineLabs.Common.Native
             Concurrent concurrent;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-            concurrent.m_Safety = m_Safety;
+            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            concurrent.m_Safety = this.m_Safety;
             AtomicSafetyHandle.UseSecondaryVersion(ref concurrent.m_Safety);
 #endif
 
-            concurrent.m_Counter = m_Counter;
+            concurrent.m_Counter = this.m_Counter;
             return concurrent;
         }
 
@@ -139,10 +139,10 @@ namespace BovineLabs.Common.Native
             {
                 // Increment still needs to check for write permissions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
 #endif
                 // The actual increment is implemented with an atomic since it can be incremented by multiple threads at the same time
-                return Interlocked.Increment(ref *m_Counter);
+                return Interlocked.Increment(ref *this.m_Counter);
             }
         }
     }
@@ -177,21 +177,21 @@ namespace BovineLabs.Common.Native
             if (!UnsafeUtility.IsBlittable<int>())
                 throw new ArgumentException(string.Format("{0} used in NativeQueue<{0}> must be blittable", typeof(int)));
 #endif
-            m_AllocatorLabel = label;
+            this.m_AllocatorLabel = label;
 
             // One full cache line (integers per cacheline * size of integer) for each potential worker index, JobsUtility.MaxJobThreadCount
-            m_Counter = (int*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<int>() * IntsPerCacheLine * JobsUtility.MaxJobThreadCount, 4, label);
+            this.m_Counter = (int*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<int>() * IntsPerCacheLine * JobsUtility.MaxJobThreadCount, 4, label);
 
             // Create a dispose sentinel to track memory leaks. This also creates the AtomicSafetyHandle
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #if UNITY_2018_3_OR_NEWER
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, label);
+            DisposeSentinel.Create(out this.m_Safety, out this.m_DisposeSentinel, 0, label);
 #else
         DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0);
 #endif
 #endif
             // Initialize the count to 0 to avoid uninitialized data
-            Count = 0;
+            this.Count = 0;
         }
 
         public void Increment()
@@ -199,9 +199,9 @@ namespace BovineLabs.Common.Native
             // Verify that the caller has write permission on this data.
             // This is the race condition protection, without these checks the AtomicSafetyHandle is useless
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
 #endif
-            (*m_Counter)++;
+            (*this.m_Counter)++;
         }
 
         public int Count
@@ -211,11 +211,11 @@ namespace BovineLabs.Common.Native
                 // Verify that the caller has read permission on this data.
                 // This is the race condition protection, without these checks the AtomicSafetyHandle is useless
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
 #endif
                 int count = 0;
                 for (int i = 0; i < JobsUtility.MaxJobThreadCount; ++i)
-                    count += m_Counter[IntsPerCacheLine * i];
+                    count += this.m_Counter[IntsPerCacheLine * i];
                 return count;
             }
             set
@@ -223,19 +223,19 @@ namespace BovineLabs.Common.Native
                 // Verify that the caller has write permission on this data.
                 // This is the race condition protection, without these checks the AtomicSafetyHandle is useless
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
 #endif
                 // Clear all locally cached counts,
                 // set the first one to the required value
                 for (int i = 1; i < JobsUtility.MaxJobThreadCount; ++i)
-                    m_Counter[IntsPerCacheLine * i] = 0;
-                *m_Counter = value;
+                    this.m_Counter[IntsPerCacheLine * i] = 0;
+                *this.m_Counter = value;
             }
         }
 
         public bool IsCreated
         {
-            get { return m_Counter != null; }
+            get { return this.m_Counter != null; }
         }
 
         public void Dispose()
@@ -243,26 +243,26 @@ namespace BovineLabs.Common.Native
             // Let the dispose sentinel know that the data has been freed so it does not report any memory leaks
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #if UNITY_2018_3_OR_NEWER
-            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+            DisposeSentinel.Dispose(ref this.m_Safety, ref this.m_DisposeSentinel);
 #else
         DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
 #endif
 #endif
 
-            UnsafeUtility.Free(m_Counter, m_AllocatorLabel);
-            m_Counter = null;
+            UnsafeUtility.Free(this.m_Counter, this.m_AllocatorLabel);
+            this.m_Counter = null;
         }
 
         public Concurrent ToConcurrent()
         {
             Concurrent concurrent;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-            concurrent.m_Safety = m_Safety;
+            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            concurrent.m_Safety = this.m_Safety;
             AtomicSafetyHandle.UseSecondaryVersion(ref concurrent.m_Safety);
 #endif
 
-            concurrent.m_Counter = m_Counter;
+            concurrent.m_Counter = this.m_Counter;
             concurrent.m_ThreadIndex = 0;
             return concurrent;
         }
@@ -286,10 +286,10 @@ namespace BovineLabs.Common.Native
             public void Increment()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
 #endif
                 // No need for atomics any more since we are just incrementing the local count
-                ++m_Counter[IntsPerCacheLine * m_ThreadIndex];
+                ++this.m_Counter[IntsPerCacheLine * this.m_ThreadIndex];
             }
         }
     }
