@@ -29,10 +29,17 @@ namespace BovineLabs.Entities.Helpers
             {
                 var ass = Assembly.GetAssembly(typeof(Mesh)); // any class in UnityEngine
                 var type = ass.GetType("UnityEngine.NoAllocHelpers");
-                var methodInfo = type.GetMethod("ExtractArrayFromListT", BindingFlags.Static | BindingFlags.Public)
-                    .MakeGenericMethod(typeof(T));
 
-                obj = ExtractArrayFromListTDelegates[typeof(T)] = Delegate.CreateDelegate(typeof(Func<List<T>, T[]>), methodInfo);
+                var methodInfo = type.GetMethod("ExtractArrayFromListT", BindingFlags.Static | BindingFlags.Public);
+
+                if (methodInfo == null)
+                {
+                    throw new Exception("ExtractArrayFromListT signature changed.");
+                }
+
+                var method = methodInfo.MakeGenericMethod(typeof(T));
+
+                obj = ExtractArrayFromListTDelegates[typeof(T)] = Delegate.CreateDelegate(typeof(Func<List<T>, T[]>), method);
             }
 
             var func = (Func<List<T>, T[]>)obj;
@@ -51,10 +58,18 @@ namespace BovineLabs.Entities.Helpers
             {
                 var ass = Assembly.GetAssembly(typeof(Mesh)); // any class in UnityEngine
                 var type = ass.GetType("UnityEngine.NoAllocHelpers");
-                var methodInfo = type.GetMethod("ResizeList", BindingFlags.Static | BindingFlags.Public)
-                    .MakeGenericMethod(typeof(T));
+
+                var methodInfo = type.GetMethod("ResizeList", BindingFlags.Static | BindingFlags.Public);
+
+                if (methodInfo == null)
+                {
+                    throw new Exception("ResizeList signature changed.");
+                }
+
+                var method = methodInfo.MakeGenericMethod(typeof(T));
+
                 obj = ResizeListDelegates[typeof(T)] =
-                    Delegate.CreateDelegate(typeof(Action<List<T>, int>), methodInfo);
+                    Delegate.CreateDelegate(typeof(Action<List<T>, int>), method);
             }
 
             var action = (Action<List<T>, int>)obj;
