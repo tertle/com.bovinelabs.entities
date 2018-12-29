@@ -1,10 +1,10 @@
 {
     "name": "com.bovinelabs.common.ecs",
-    "description": "Extensions for unity ECS",
+    "description": "Common library",
     "version": "0.0.1",
     "unity": "2018.3",
-    "displayName": "BovineLabs ECS",
+    "displayName": "BovineLabs.Common",
     "dependencies": {
-        "com.unity.entities": "0.0.12-preview.21",
+        "com.unity.entities": "0.0.12-preview.21"
     }
 }
