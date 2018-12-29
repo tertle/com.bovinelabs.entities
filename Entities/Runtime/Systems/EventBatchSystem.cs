@@ -14,6 +14,7 @@ namespace BovineLabs.Entities.Systems
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.Jobs;
+    using UnityEngine.Assertions;
     using UnityEngine.Profiling;
 
     /// <summary>
@@ -86,12 +87,19 @@ namespace BovineLabs.Entities.Systems
             }
 
             this.types.Clear();
+
+            foreach (var t in this.bufferTypes)
+            {
+                t.Value.Dispose();
+            }
+
+            this.bufferTypes.Clear();
         }
 
         /// <inheritdoc />
         protected override void OnUpdate()
         {
-            var handles = new NativeArray<JobHandle>(this.types.Count, Allocator.TempJob);
+            var handles = new NativeArray<JobHandle>(this.types.Count + this.bufferTypes.Count, Allocator.TempJob);
 
             int index = 0;
 
@@ -100,10 +108,20 @@ namespace BovineLabs.Entities.Systems
                 handles[index++] = t.Value.Update(this.EntityManager);
             }
 
+            foreach (var t in this.bufferTypes)
+            {
+                handles[index++] = t.Value.Update(this.EntityManager);
+            }
+
             JobHandle.CompleteAll(handles);
             handles.Dispose();
 
             foreach (var t in this.types)
+            {
+                t.Value.Reset();
+            }
+
+            foreach (var t in this.bufferTypes)
             {
                 t.Value.Reset();
             }
@@ -128,6 +146,9 @@ namespace BovineLabs.Entities.Systems
                 };
             }
 
+            /// <inheritdoc />
+            protected override ComponentType[] ArchetypeTypes { get; } = { typeof(T) };
+
             public NativeQueue<T> GetNew(JobComponentSystem componentSystem)
             {
                 // Having allocation leak warnings when using TempJob
@@ -137,21 +158,6 @@ namespace BovineLabs.Entities.Systems
                 this.dependencies.Add(componentSystem);
 
                 return queue;
-            }
-
-            /// <inheritdoc />
-            public override JobHandle Update(EntityManager entityManager)
-            {
-                this.CompleteDependencies();
-
-                var handle = base.Update(entityManager);
-
-                if (!this.CreateEntities(entityManager))
-                {
-                    return default;
-                }
-
-                return this.SetComponentData(entityManager, handle);
             }
 
             public override void Reset()
@@ -166,7 +172,36 @@ namespace BovineLabs.Entities.Systems
                 this.queues.Clear();
             }
 
-            private JobHandle SetComponentData(EntityManager entityManager, JobHandle handle)
+            protected override int GetCount()
+            {
+                var sum = 0;
+                foreach (var i in this.queues)
+                {
+                    sum += i.Count;
+                }
+
+                return sum;
+            }
+
+            protected override void BeforeUpdate(EntityManager entityManager)
+            {
+                Profiler.BeginSample("Dependencies");
+
+                JobHandle dependencyHandle = default;
+
+                foreach (var system in this.dependencies)
+                {
+                    dependencyHandle = JobHandle.CombineDependencies(dependencyHandle, system.GetJobHandle());
+                }
+
+                dependencyHandle.Complete();
+                this.dependencies.Clear();
+
+                Profiler.EndSample();
+            }
+
+            /// <inheritdoc />
+            protected override JobHandle SetComponentData(EntityManager entityManager, NativeArray<Entity> entities)
             {
                 var componentType = entityManager.GetArchetypeChunkComponentType<T>(false);
 
@@ -190,82 +225,16 @@ namespace BovineLabs.Entities.Systems
 
                     startIndex += queue.Count;
 
-                    handles[index] = job.Schedule(handle);
+                    handles[index] = job.Schedule();
                 }
 
-                var combinedHandle = JobHandle.CombineDependencies(handles);
+                var handle = JobHandle.CombineDependencies(handles);
                 handles.Dispose();
 
                 // Deallocate the chunk array
-                combinedHandle = new DeallocateJob<NativeArray<ArchetypeChunk>>(chunks).Schedule(combinedHandle);
+                handle = new DeallocateJob<NativeArray<ArchetypeChunk>>(chunks).Schedule(handle);
 
-                return combinedHandle;
-            }
-
-            private bool CreateEntities(EntityManager entityManager)
-            {
-                var count = this.GetCount();
-
-                if (count == 0)
-                {
-                    return false;
-                }
-
-                Profiler.BeginSample("CreateEntity");
-
-                // Felt like Temp should be the allocator but gets disposed for some reason.
-                this.Entities = new NativeArray<Entity>(count, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-
-                if (!this.archetype.Valid)
-                {
-                    this.archetype = entityManager.CreateArchetype(typeof(T));
-                }
-
-                entityManager.CreateEntity(this.archetype, this.Entities);
-
-                Profiler.EndSample();
-                return true;
-            }
-
-            private void CompleteDependencies()
-            {
-                Profiler.BeginSample("Dependencies");
-
-                JobHandle dependencyHandle = default;
-
-                foreach (var system in this.dependencies)
-                {
-                    dependencyHandle = JobHandle.CombineDependencies(dependencyHandle, system.GetJobHandle());
-                }
-
-                dependencyHandle.Complete();
-                this.dependencies.Clear();
-
-                Profiler.EndSample();
-            }
-
-            private void DestroyEntities(EntityManager entityManager)
-            {
-                Profiler.BeginSample("DestroyEntity");
-
-                if (this.Entities.IsCreated)
-                {
-                    entityManager.DestroyEntity(this.Entities);
-                    this.Entities.Dispose();
-                }
-
-                Profiler.EndSample();
-            }
-
-            private int GetCount()
-            {
-                var sum = 0;
-                foreach (var i in this.queues)
-                {
-                    sum += i.Count;
-                }
-
-                return sum;
+                return handle;
             }
 
             [BurstCompile]
@@ -337,20 +306,13 @@ namespace BovineLabs.Entities.Systems
         {
             private readonly List<KeyValuePair<T, NativeArray<TB>>> queue = new List<KeyValuePair<T, NativeArray<TB>>>();
 
-            private NativeArray<Entity> entities;
-
             public void Enqueue(T component, NativeArray<TB> buffer)
             {
                 this.queue.Add(new KeyValuePair<T, NativeArray<TB>>(component, buffer));
             }
 
             /// <inheritdoc />
-            public override JobHandle Update(EntityManager entityManager)
-            {
-                var handle = base.Update(entityManager);
-
-                return handle;
-            }
+            protected override ComponentType[] ArchetypeTypes { get; } = { typeof(T), typeof(TB) };
 
             /// <inheritdoc />
             public override void Reset()
@@ -364,22 +326,57 @@ namespace BovineLabs.Entities.Systems
 
                 this.queue.Clear();
             }
+
+            protected override int GetCount()
+            {
+                return this.queue.Count;
+            }
+
+            /// <inheritdoc />
+            protected override JobHandle SetComponentData(EntityManager entityManager, NativeArray<Entity> entities)
+            {
+                Assert.AreEqual(this.queue.Count, entities.Length);
+
+                for (var index = 0; index < this.queue.Count; index++)
+                {
+                    var pair = this.queue[index];
+                    var entity = entities[index];
+
+                    entityManager.SetComponentData(entity, pair.Key);
+
+                    var buffer = entityManager.GetBuffer<TB>(entity);
+                    buffer.AddRange(pair.Value);
+                }
+
+                return default;
+            }
         }
 
         private abstract class EventBatchBase : IEventBatch
         {
-            protected NativeArray<Entity> Entities { get; set; }
+            private EntityArchetype archetype;
+
+            private NativeArray<Entity> entities;
+
+            protected abstract ComponentType[] ArchetypeTypes { get; }
 
             /// <summary>
             /// Handles the destroying of entities.
             /// </summary>
             /// <param name="entityManager">The entity manager.</param>
             /// <returns>A default handle.</returns>
-            public virtual JobHandle Update(EntityManager entityManager)
+            public JobHandle Update(EntityManager entityManager)
             {
+                this.BeforeUpdate(entityManager);
+
                 this.DestroyEntities(entityManager);
 
-                return default;
+                if (!this.CreateEntities(entityManager))
+                {
+                    return default;
+                }
+
+                return this.SetComponentData(entityManager, this.entities);
             }
 
             /// <summary>
@@ -392,25 +389,56 @@ namespace BovineLabs.Entities.Systems
             /// <inheritdoc />
             public void Dispose()
             {
-                if (this.Entities.IsCreated)
+                if (this.entities.IsCreated)
                 {
-                    this.Entities.Dispose();
+                    this.entities.Dispose();
                 }
 
                 this.Reset();
             }
 
+            protected abstract int GetCount();
+
+            protected virtual void BeforeUpdate(EntityManager entityManager) { }
+
+            protected abstract JobHandle SetComponentData(EntityManager entityManager, NativeArray<Entity> entities);
+
             private void DestroyEntities(EntityManager entityManager)
             {
                 Profiler.BeginSample("DestroyEntity");
 
-                if (this.Entities.IsCreated)
+                if (this.entities.IsCreated)
                 {
-                    entityManager.DestroyEntity(this.Entities);
-                    this.Entities.Dispose();
+                    entityManager.DestroyEntity(this.entities);
+                    this.entities.Dispose();
                 }
 
                 Profiler.EndSample();
+            }
+
+            private bool CreateEntities(EntityManager entityManager)
+            {
+                var count = this.GetCount();
+
+                if (count == 0)
+                {
+                    return false;
+                }
+
+                Profiler.BeginSample("CreateEntity");
+
+                // Felt like Temp should be the allocator but gets disposed for some reason.
+                this.entities = new NativeArray<Entity>(count, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+
+                if (!this.archetype.Valid)
+                {
+                    this.archetype = entityManager.CreateArchetype(this.ArchetypeTypes);
+                }
+
+                entityManager.CreateEntity(this.archetype, this.entities);
+
+                Profiler.EndSample();
+                return true;
             }
         }
     }
