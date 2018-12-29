@@ -2,15 +2,15 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Testing.Extensions
+namespace BovineLabs.Entities.Tests.Extensions
 {
     using System.Collections.Generic;
-    using BovineLabs.Common.Extensions;
+    using BovineLabs.Entities.Extensions;
     using NUnit.Framework;
     using Unity.Collections;
 
     /// <summary>
-    /// Tests for the <see cref="Common.Extensions.ListExtensions"/>.
+    /// Tests for the <see cref="Entities.Extensions.ListExtensions"/>.
     /// </summary>
     public class ListExtensionsTests
     {

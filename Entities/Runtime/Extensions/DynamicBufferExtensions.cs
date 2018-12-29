@@ -2,7 +2,7 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Extensions
+namespace BovineLabs.Entities.Extensions
 {
     using System;
     using Unity.Collections;

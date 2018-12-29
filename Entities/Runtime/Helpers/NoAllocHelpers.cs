@@ -2,7 +2,7 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Helpers
+namespace BovineLabs.Entities.Helpers
 {
     using System;
     using System.Collections.Generic;

@@ -2,14 +2,12 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Extensions
+namespace BovineLabs.Entities.Extensions
 {
     using System;
     using System.Collections.Generic;
     using System.Reflection;
-
     using Unity.Entities;
-
     using UnityEngine;
 
     /// <summary>

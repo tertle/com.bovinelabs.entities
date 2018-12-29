@@ -2,7 +2,7 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Containers
+namespace BovineLabs.Entities.Containers
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

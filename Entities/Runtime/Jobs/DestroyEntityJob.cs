@@ -2,7 +2,7 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Jobs
+namespace BovineLabs.Entities.Jobs
 {
     using Unity.Burst;
     using Unity.Collections;

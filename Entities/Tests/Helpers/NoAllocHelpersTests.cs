@@ -2,10 +2,10 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Testing.Helpers
+namespace BovineLabs.Entities.Tests.Helpers
 {
     using System.Collections.Generic;
-    using BovineLabs.Common.Helpers;
+    using BovineLabs.Entities.Helpers;
     using NUnit.Framework;
 
     /// <summary>

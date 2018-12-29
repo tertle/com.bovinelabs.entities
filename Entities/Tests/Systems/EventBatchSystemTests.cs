@@ -2,9 +2,9 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Testing.Systems
+namespace BovineLabs.Entities.Tests.Systems
 {
-    using BovineLabs.Common.Systems;
+    using BovineLabs.Entities.Systems;
     using NUnit.Framework;
     using Unity.Collections;
     using Unity.Entities;

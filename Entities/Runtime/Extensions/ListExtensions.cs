@@ -2,12 +2,12 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Extensions
+namespace BovineLabs.Entities.Extensions
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using BovineLabs.Common.Helpers;
+    using BovineLabs.Entities.Helpers;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;

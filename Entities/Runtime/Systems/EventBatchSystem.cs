@@ -2,12 +2,12 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Common.Systems
+namespace BovineLabs.Entities.Systems
 {
     using System;
     using System.Collections.Generic;
-    using BovineLabs.Common.Extensions;
-    using BovineLabs.Common.Jobs;
+    using BovineLabs.Entities.Extensions;
+    using BovineLabs.Entities.Jobs;
     using JetBrains.Annotations;
     using Unity.Burst;
     using Unity.Collections;
