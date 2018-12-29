@@ -1,4 +1,4 @@
-﻿// <copyright file="EventBatchSystem.cs" company="Timothy Raines">
+﻿// <copyright file="EntityEventSystem.cs" company="Timothy Raines">
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
@@ -47,10 +47,10 @@ namespace BovineLabs.Entities.Systems
         }
 
         /// <summary>
-        /// Any component added to the returned <see cref="NativeQueue{T}"/> will be attached to a new entity as an event.
-        /// These entities will be automatically destroyed 1 frame later.
+        /// Creates a queue where any added component added will be batch created as an entity event
+        /// and automatically destroyed 1 frame later.
         /// </summary>
-        /// <typeparam name="T">The type of component data event.</typeparam>
+        /// <typeparam name="T">The type of <see cref="IComponentData"/>.</typeparam>
         /// <param name="componentSystem">The component system getting the queue.</param>
         /// <returns>A <see cref="NativeQueue{T}"/> which any component that is added will be turned into a single frame event.</returns>
         public NativeQueue<T> CreateEventQueue<T>(JobComponentSystem componentSystem)
@@ -64,6 +64,14 @@ namespace BovineLabs.Entities.Systems
             return ((EventBatch<T>)create).GetNew(componentSystem);
         }
 
+        /// <summary>
+        /// Creates a new event with a component and a buffer. These events are batch created
+        /// will be automatically destroyed 1 frame later.
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="IComponentData"/>.</typeparam>
+        /// <typeparam name="TB">The type of <see cref="IBufferElementData"/>.</typeparam>
+        /// <param name="component">The event component.</param>
+        /// <param name="buffer">The event buffer.</param>
         public void CreateBufferEvent<T, TB>(T component, NativeArray<TB> buffer)
             where T : struct, IComponentData
             where TB : struct, IBufferElementData
@@ -183,7 +191,7 @@ namespace BovineLabs.Entities.Systems
                 return sum;
             }
 
-            protected override void BeforeUpdate(EntityManager entityManager)
+            protected override void BeforeUpdate()
             {
                 Profiler.BeginSample("Dependencies");
 
@@ -306,13 +314,13 @@ namespace BovineLabs.Entities.Systems
         {
             private readonly List<KeyValuePair<T, NativeArray<TB>>> queue = new List<KeyValuePair<T, NativeArray<TB>>>();
 
+            /// <inheritdoc />
+            protected override ComponentType[] ArchetypeTypes { get; } = { typeof(T), typeof(TB) };
+
             public void Enqueue(T component, NativeArray<TB> buffer)
             {
                 this.queue.Add(new KeyValuePair<T, NativeArray<TB>>(component, buffer));
             }
-
-            /// <inheritdoc />
-            protected override ComponentType[] ArchetypeTypes { get; } = { typeof(T), typeof(TB) };
 
             /// <inheritdoc />
             public override void Reset()
@@ -367,7 +375,7 @@ namespace BovineLabs.Entities.Systems
             /// <returns>A default handle.</returns>
             public JobHandle Update(EntityManager entityManager)
             {
-                this.BeforeUpdate(entityManager);
+                this.BeforeUpdate();
 
                 this.DestroyEntities(entityManager);
 
@@ -399,7 +407,9 @@ namespace BovineLabs.Entities.Systems
 
             protected abstract int GetCount();
 
-            protected virtual void BeforeUpdate(EntityManager entityManager) { }
+            protected virtual void BeforeUpdate()
+            {
+            }
 
             protected abstract JobHandle SetComponentData(EntityManager entityManager, NativeArray<Entity> entities);
 
