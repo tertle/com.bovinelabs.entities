@@ -1,4 +1,4 @@
-﻿// <copyright file="EventBatchSystemTests.cs" company="Timothy Raines">
+﻿// <copyright file="EntityEventSystemTests.cs" company="Timothy Raines">
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
@@ -11,19 +11,19 @@ namespace BovineLabs.Entities.Tests.Systems
     using Unity.Entities.Tests;
 
     /// <summary>
-    /// The BatchSystemTests.
+    /// The eventSystemTests.
     /// </summary>
-    public class BatchSystemTests : ECSTestsFixture
+    public class EntityEventSystemTests : ECSTestsFixture
     {
         /// <summary>
-        /// Test that only a single use of <see cref="EventBatchSystem.CreateEventQueue{T}"/> works correctly.
+        /// Test that only a single use of <see cref="EntityEventSystem.CreateEventQueue{T}"/> works correctly.
         /// </summary>
         [Test]
         public void CreateEventQueueSingleBatchCreates()
         {
-            var batchSystem = this.World.CreateManager<EventBatchSystem>();
+            var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
-            var queue = batchSystem.CreateEventQueue<TestData>(this.EmptySystem);
+            var queue = eventSystem.CreateEventQueue<TestData>(this.EmptySystem);
 
             var data0 = new TestData { Value = 0 };
             var data1 = new TestData { Value = 1 };
@@ -33,7 +33,7 @@ namespace BovineLabs.Entities.Tests.Systems
             queue.Enqueue(data1);
             queue.Enqueue(data2);
 
-            batchSystem.Update();
+            eventSystem.Update();
 
             var group = this.m_Manager.CreateComponentGroup(typeof(TestData));
             Assert.AreEqual(3, group.CalculateLength());
@@ -59,26 +59,26 @@ namespace BovineLabs.Entities.Tests.Systems
         }
 
         /// <summary>
-        /// Test that <see cref="EventBatchSystem.CreateEventQueue{T}"/> returns a different queue each time.
+        /// Test that <see cref="EntityEventSystem.CreateEventQueue{T}"/> returns a different queue each time.
         /// </summary>
         [Test]
         public void CreateEventQueueReturnsDifferentQueues()
         {
-            var batchSystem = this.World.CreateManager<EventBatchSystem>();
+            var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
-            Assert.AreNotEqual(batchSystem.CreateEventQueue<TestData>(this.EmptySystem), batchSystem.CreateEventQueue<TestData>(this.EmptySystem));
+            Assert.AreNotEqual(eventSystem.CreateEventQueue<TestData>(this.EmptySystem), eventSystem.CreateEventQueue<TestData>(this.EmptySystem));
         }
 
         /// <summary>
-        /// Test that multiple calls of <see cref="EventBatchSystem.CreateEventQueue{T}"/> works correctly.
+        /// Test that multiple calls of <see cref="EntityEventSystem.CreateEventQueue{T}"/> works correctly.
         /// </summary>
         [Test]
         public void CreateEventQueueMultipleQueueWork()
         {
-            var batchSystem = this.World.CreateManager<EventBatchSystem>();
+            var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
-            var queue1 = batchSystem.CreateEventQueue<TestData>(this.EmptySystem);
-            var queue2 = batchSystem.CreateEventQueue<TestData>(this.EmptySystem);
+            var queue1 = eventSystem.CreateEventQueue<TestData>(this.EmptySystem);
+            var queue2 = eventSystem.CreateEventQueue<TestData>(this.EmptySystem);
 
             var data0 = new TestData { Value = 0 };
             var data1 = new TestData { Value = 1 };
@@ -88,7 +88,7 @@ namespace BovineLabs.Entities.Tests.Systems
             queue1.Enqueue(data1);
             queue2.Enqueue(data2);
 
-            batchSystem.Update();
+            eventSystem.Update();
 
             var group = this.m_Manager.CreateComponentGroup(typeof(TestData));
             Assert.AreEqual(3, group.CalculateLength());
@@ -115,15 +115,15 @@ namespace BovineLabs.Entities.Tests.Systems
         }
 
         /// <summary>
-        /// Test that multiple calls of <see cref="EventBatchSystem.CreateEventQueue{T}"/> with different types works correctly.
+        /// Test that multiple calls of <see cref="EntityEventSystem.CreateEventQueue{T}"/> with different types works correctly.
         /// </summary>
         [Test]
         public void CreateEventQueueMultipleTypesCreates()
         {
-            var batchSystem = this.World.CreateManager<EventBatchSystem>();
+            var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
-            var queue = batchSystem.CreateEventQueue<TestData>(this.EmptySystem);
-            var queue2 = batchSystem.CreateEventQueue<TestData2>(this.EmptySystem);
+            var queue = eventSystem.CreateEventQueue<TestData>(this.EmptySystem);
+            var queue2 = eventSystem.CreateEventQueue<TestData2>(this.EmptySystem);
 
             var data0 = new TestData { Value = 0 };
             var data1 = new TestData { Value = 1 };
@@ -141,7 +141,7 @@ namespace BovineLabs.Entities.Tests.Systems
             queue2.Enqueue(data21);
             queue2.Enqueue(data22);
 
-            batchSystem.Update();
+            eventSystem.Update();
 
             var group = this.m_Manager.CreateComponentGroup(typeof(TestData));
             Assert.AreEqual(3, group.CalculateLength());
