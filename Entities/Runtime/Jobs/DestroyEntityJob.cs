@@ -8,24 +8,6 @@ namespace BovineLabs.Entities.Jobs
     using Unity.Collections;
     using Unity.Entities;
 
-    // TODO REMOVE BOTH
-
-    /// <summary>
-    /// Destroy an entity that has a component.
-    /// </summary>
-    /// <typeparam name="T">The component type.</typeparam>
-    [BurstCompile]
-    public struct DestroyEntityJob<T> : IJobProcessComponentDataWithEntity<T>
-        where T : struct, IComponentData
-    {
-        public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-
-        public void Execute(Entity entity, int index, [ReadOnly] ref T data)
-        {
-            this.EntityCommandBuffer.DestroyEntity(index, entity);
-        }
-    }
-
     [BurstCompile]
     public struct DestroyEntityJob : IJobChunk
     {

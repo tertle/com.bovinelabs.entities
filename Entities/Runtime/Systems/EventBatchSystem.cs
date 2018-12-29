@@ -24,6 +24,9 @@ namespace BovineLabs.Entities.Systems
     {
         private readonly Dictionary<Type, IEventBatch> types = new Dictionary<Type, IEventBatch>();
 
+        private readonly Dictionary<KeyValuePair<Type, Type>, IEventBatch> bufferTypes =
+            new Dictionary<KeyValuePair<Type, Type>, IEventBatch>();
+
         /// <summary>
         /// The interface for the batch systems.
         /// </summary>
@@ -60,6 +63,20 @@ namespace BovineLabs.Entities.Systems
             return ((EventBatch<T>)create).GetNew(componentSystem);
         }
 
+        public void CreateBufferEvent<T, TB>(T component, NativeArray<TB> buffer)
+            where T : struct, IComponentData
+            where TB : struct, IBufferElementData
+        {
+            var key = new KeyValuePair<Type, Type>(typeof(T), typeof(TB));
+
+            if (!this.bufferTypes.TryGetValue(key, out var create))
+            {
+                create = this.bufferTypes[key] = new EventBufferBatch<T, TB>();
+            }
+
+            ((EventBufferBatch<T, TB>)create).Enqueue(component, buffer);
+        }
+
         /// <inheritdoc />
         protected override void OnDestroyManager()
         {
@@ -92,7 +109,7 @@ namespace BovineLabs.Entities.Systems
             }
         }
 
-        private class EventBatch<T> : IEventBatch
+        private class EventBatch<T> : EventBatchBase
             where T : struct, IComponentData
         {
             private readonly HashSet<JobComponentSystem> dependencies = new HashSet<JobComponentSystem>();
@@ -100,7 +117,6 @@ namespace BovineLabs.Entities.Systems
             private readonly EntityArchetypeQuery query;
 
             private EntityArchetype archetype;
-            private NativeArray<Entity> entities;
 
             public EventBatch()
             {
@@ -124,21 +140,24 @@ namespace BovineLabs.Entities.Systems
             }
 
             /// <inheritdoc />
-            public JobHandle Update(EntityManager entityManager)
+            public override JobHandle Update(EntityManager entityManager)
             {
                 this.CompleteDependencies();
-                this.DestroyEntities(entityManager);
+
+                var handle = base.Update(entityManager);
 
                 if (!this.CreateEntities(entityManager))
                 {
                     return default;
                 }
 
-                return this.SetComponentData(entityManager);
+                return this.SetComponentData(entityManager, handle);
             }
 
-            public void Reset()
+            public override void Reset()
             {
+                base.Reset();
+
                 foreach (var queue in this.queues)
                 {
                     queue.Dispose();
@@ -147,17 +166,7 @@ namespace BovineLabs.Entities.Systems
                 this.queues.Clear();
             }
 
-            public void Dispose()
-            {
-                if (this.entities.IsCreated)
-                {
-                    this.entities.Dispose();
-                }
-
-                this.Reset();
-            }
-
-            private JobHandle SetComponentData(EntityManager entityManager)
+            private JobHandle SetComponentData(EntityManager entityManager, JobHandle handle)
             {
                 var componentType = entityManager.GetArchetypeChunkComponentType<T>(false);
 
@@ -181,16 +190,16 @@ namespace BovineLabs.Entities.Systems
 
                     startIndex += queue.Count;
 
-                    handles[index] = job.Schedule();
+                    handles[index] = job.Schedule(handle);
                 }
 
-                var handle = JobHandle.CombineDependencies(handles);
+                var combinedHandle = JobHandle.CombineDependencies(handles);
                 handles.Dispose();
 
                 // Deallocate the chunk array
-                handle = new DeallocateJob<NativeArray<ArchetypeChunk>>(chunks).Schedule(handle);
+                combinedHandle = new DeallocateJob<NativeArray<ArchetypeChunk>>(chunks).Schedule(combinedHandle);
 
-                return handle;
+                return combinedHandle;
             }
 
             private bool CreateEntities(EntityManager entityManager)
@@ -205,14 +214,14 @@ namespace BovineLabs.Entities.Systems
                 Profiler.BeginSample("CreateEntity");
 
                 // Felt like Temp should be the allocator but gets disposed for some reason.
-                this.entities = new NativeArray<Entity>(count, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+                this.Entities = new NativeArray<Entity>(count, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
                 if (!this.archetype.Valid)
                 {
                     this.archetype = entityManager.CreateArchetype(typeof(T));
                 }
 
-                entityManager.CreateEntity(this.archetype, this.entities);
+                entityManager.CreateEntity(this.archetype, this.Entities);
 
                 Profiler.EndSample();
                 return true;
@@ -239,10 +248,10 @@ namespace BovineLabs.Entities.Systems
             {
                 Profiler.BeginSample("DestroyEntity");
 
-                if (this.entities.IsCreated)
+                if (this.Entities.IsCreated)
                 {
-                    entityManager.DestroyEntity(this.entities);
-                    this.entities.Dispose();
+                    entityManager.DestroyEntity(this.Entities);
+                    this.Entities.Dispose();
                 }
 
                 Profiler.EndSample();
@@ -319,6 +328,89 @@ namespace BovineLabs.Entities.Systems
 
                     throw new ArgumentOutOfRangeException(nameof(this.StartIndex));
                 }
+            }
+        }
+
+        private class EventBufferBatch<T, TB> : EventBatchBase
+            where T : struct, IComponentData
+            where TB : struct, IBufferElementData
+        {
+            private readonly List<KeyValuePair<T, NativeArray<TB>>> queue = new List<KeyValuePair<T, NativeArray<TB>>>();
+
+            private NativeArray<Entity> entities;
+
+            public void Enqueue(T component, NativeArray<TB> buffer)
+            {
+                this.queue.Add(new KeyValuePair<T, NativeArray<TB>>(component, buffer));
+            }
+
+            /// <inheritdoc />
+            public override JobHandle Update(EntityManager entityManager)
+            {
+                var handle = base.Update(entityManager);
+
+                return handle;
+            }
+
+            /// <inheritdoc />
+            public override void Reset()
+            {
+                base.Reset();
+
+                foreach (var pending in this.queue)
+                {
+                    pending.Value.Dispose();
+                }
+
+                this.queue.Clear();
+            }
+        }
+
+        private abstract class EventBatchBase : IEventBatch
+        {
+            protected NativeArray<Entity> Entities { get; set; }
+
+            /// <summary>
+            /// Handles the destroying of entities.
+            /// </summary>
+            /// <param name="entityManager">The entity manager.</param>
+            /// <returns>A default handle.</returns>
+            public virtual JobHandle Update(EntityManager entityManager)
+            {
+                this.DestroyEntities(entityManager);
+
+                return default;
+            }
+
+            /// <summary>
+            /// Optional reset method.
+            /// </summary>
+            public virtual void Reset()
+            {
+            }
+
+            /// <inheritdoc />
+            public void Dispose()
+            {
+                if (this.Entities.IsCreated)
+                {
+                    this.Entities.Dispose();
+                }
+
+                this.Reset();
+            }
+
+            private void DestroyEntities(EntityManager entityManager)
+            {
+                Profiler.BeginSample("DestroyEntity");
+
+                if (this.Entities.IsCreated)
+                {
+                    entityManager.DestroyEntity(this.Entities);
+                    this.Entities.Dispose();
+                }
+
+                Profiler.EndSample();
             }
         }
     }
