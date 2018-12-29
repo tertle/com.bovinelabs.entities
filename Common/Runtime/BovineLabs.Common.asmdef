@@ -1,12 +1,14 @@
 {
     "name": "BovineLabs.Common",
     "references": [
-        "Unity.Entities"
+        "Unity.Entities",
+        "Unity.Collections",
+        "Unity.Burst"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,

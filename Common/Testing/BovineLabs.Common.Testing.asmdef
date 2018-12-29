@@ -1,0 +1,20 @@
+{
+    "name": "BovineLabs.Common.Testing",
+    "references": [
+        "Unity.Entities.Tests",
+        "BovineLabs.Common",
+        "Unity.Entities",
+		"Unity.Collections",
+        "Unity.Burst"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
