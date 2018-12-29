@@ -19,7 +19,7 @@ namespace BovineLabs.Entities.Tests.Systems
         /// Test that only a single use of <see cref="EntityEventSystem.CreateEventQueue{T}"/> works correctly.
         /// </summary>
         [Test]
-        public void CreateEventQueueSingleBatchCreates()
+        public void CreateEventQueueSingleQueue()
         {
             var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
@@ -66,14 +66,16 @@ namespace BovineLabs.Entities.Tests.Systems
         {
             var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
-            Assert.AreNotEqual(eventSystem.CreateEventQueue<TestData>(this.EmptySystem), eventSystem.CreateEventQueue<TestData>(this.EmptySystem));
+            Assert.AreNotEqual(
+                eventSystem.CreateEventQueue<TestData>(this.EmptySystem),
+                eventSystem.CreateEventQueue<TestData>(this.EmptySystem));
         }
 
         /// <summary>
         /// Test that multiple calls of <see cref="EntityEventSystem.CreateEventQueue{T}"/> works correctly.
         /// </summary>
         [Test]
-        public void CreateEventQueueMultipleQueueWork()
+        public void CreateEventQueueMultipleQueued()
         {
             var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
@@ -118,7 +120,7 @@ namespace BovineLabs.Entities.Tests.Systems
         /// Test that multiple calls of <see cref="EntityEventSystem.CreateEventQueue{T}"/> with different types works correctly.
         /// </summary>
         [Test]
-        public void CreateEventQueueMultipleTypesCreates()
+        public void CreateEventQueueMultipleTypesQueued()
         {
             var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
@@ -188,12 +190,96 @@ namespace BovineLabs.Entities.Tests.Systems
             chunks2.Dispose();
         }
 
+        /// <summary>
+        /// Tests that the <see cref="NativeArray{T}"/> passed to <see cref="EntityEventSystem.CreateBufferEvent{T,TD}"/>
+        /// is deallocated after use.
+        /// </summary>
+        [Test]
+        public void CreateBufferEventDeallocatesArray()
+        {
+            var eventSystem = this.World.CreateManager<EntityEventSystem>();
+            var array = new NativeArray<BufferData>(1, Allocator.TempJob);
+
+            eventSystem.CreateBufferEvent(new TestData { Value = 1 }, array);
+
+            eventSystem.Update();
+
+            // Doesn't work as a dispose check as of 0.0.12p21
+            // Assert.IsFalse(array.IsCreated);
+            Assert.Throws<System.InvalidOperationException>(() =>
+            {
+                // ReSharper disable once UnusedVariable
+                var l = array[0];
+            });
+        }
+
+        /// <summary>
+        /// Tests that <see cref="EntityEventSystem.CreateBufferEvent{T,TD}"/> creates the event.
+        /// </summary>
+        [Test]
+        public void CreateBufferEventCreates()
+        {
+            const int bufferLength = 10;
+
+            var eventSystem = this.World.CreateManager<EntityEventSystem>();
+            var array = new NativeArray<BufferData>(bufferLength, Allocator.TempJob);
+            var array1 = new NativeArray<BufferData>(bufferLength, Allocator.TempJob);
+
+            for (var index = 0; index < bufferLength; index++)
+            {
+                array[index] = new BufferData { Value = index };
+                array1[index] = new BufferData { Value = -index };
+            }
+
+            eventSystem.CreateBufferEvent(new TestData { Value = 0 }, array);
+            eventSystem.CreateBufferEvent(new TestData { Value = 1 }, array1);
+
+            eventSystem.Update();
+
+            var group = this.m_Manager.CreateComponentGroup(typeof(TestData), typeof(BufferData));
+            Assert.AreEqual(2, group.CalculateLength());
+
+            var chunks = group.CreateArchetypeChunkArray(Allocator.TempJob);
+
+            int count = 0;
+
+            var testDataType = this.m_Manager.GetArchetypeChunkComponentType<TestData>(true);
+            var bufferDataType = this.m_Manager.GetArchetypeChunkBufferType<BufferData>(true);
+
+            for (var chunkIndex = 0; chunkIndex < chunks.Length; chunkIndex++)
+            {
+                var chunk = chunks[chunkIndex];
+                var data = chunk.GetNativeArray(testDataType);
+                var bufferAccessor = chunk.GetBufferAccessor(bufferDataType);
+
+                for (var index = 0; index < chunk.Count; index++)
+                {
+                    var value = data[index].Value;
+                    var buffer = bufferAccessor[index];
+
+                    Assert.AreEqual(count++, value);
+
+                    for (var i = 0; i < bufferLength; i++)
+                    {
+                        Assert.AreEqual((index == 0 ? 1 : -1) * i, buffer[i].Value);
+                    }
+                }
+            }
+
+            chunks.Dispose();
+        }
+
         private struct TestData : IComponentData
         {
             public int Value;
         }
 
         private struct TestData2 : IComponentData
+        {
+            public int Value;
+        }
+
+        private struct BufferData : IBufferElementData
         {
             public int Value;
         }
