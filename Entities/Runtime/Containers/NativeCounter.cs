@@ -1,6 +1,4 @@
-﻿// <copyright file="NativeCounter.cs" company="Timothy Raines">
-//     Copyright (c) Timothy Raines. All rights reserved.
-// </copyright>
+// Taken from https://github.com/Unity-Technologies/EntityComponentSystemSamples/blob/master/Samples/Assets/NativeCounterDemo/NativeCounter.cs
 
 namespace BovineLabs.Entities.Containers
 {
