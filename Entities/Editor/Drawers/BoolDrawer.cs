@@ -2,6 +2,7 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
+#if ODIN_INSPECTOR
 namespace BovineLabs.Entities.Editor.Drawers
 {
     using BovineLabs.Entities.Helpers;
@@ -23,3 +24,4 @@ namespace BovineLabs.Entities.Editor.Drawers
         }
     }
 }
+#endif
