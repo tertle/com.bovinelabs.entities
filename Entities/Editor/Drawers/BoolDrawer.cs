@@ -1,10 +1,10 @@
-﻿/*// <copyright file="BoolDrawer.cs" company="Timothy Raines">
+﻿// <copyright file="BoolDrawer.cs" company="Timothy Raines">
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Editor.Drawers
+namespace BovineLabs.Entities.Editor.Drawers
 {
-    using BovineLabs.Common.Native;
+    using BovineLabs.Entities.Helpers;
     using JetBrains.Annotations;
     using Sirenix.OdinInspector.Editor;
     using UnityEditor;
@@ -22,4 +22,4 @@ namespace BovineLabs.Editor.Drawers
             this.ValueEntry.SmartValue = EditorGUILayout.Toggle(label, this.ValueEntry.SmartValue);
         }
     }
-}*/
+}
