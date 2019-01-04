@@ -1,7 +1,9 @@
 # com.bovinelabs.entities
 
 ## Systems
-### EntityEventSystem - System designed to easily and efficiently create simple events.
+### EntityEventSystem
+https://forum.unity.com/threads/batch-entitycommandbuffer.593569/
+Easily create simple events extremeply efficiently.
 
 #### How to use
 
