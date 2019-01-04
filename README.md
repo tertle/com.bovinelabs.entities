@@ -1,9 +1,9 @@
 # com.bovinelabs.entities
 
 ## Systems
-* EntityEventSystem - System designed to easily and efficiently create simple events.
+### EntityEventSystem - System designed to easily and efficiently create simple events.
 
-### How to use
+#### How to use
 
 Instead of using a EntityCommandBuffer, we get a NativeQueue<T> from CreateEventQueue where T is IComponentData, the event data. 
 ```c#
@@ -13,14 +13,14 @@ It is safe to pass this queue to Jobs, using ToConcurrent() for parallal jobs. O
 
 The EntityEventSystem will batch create create entities for all these components and then set the component data.
 
-### Things to know
+#### Things to know
 * Events live exactly 1 frame. They will be created in EntityEventSystem and 1 frame later destroyed in EntityEventSystem.
 * Use of event will be delayed till the next frame. EntityEventSystem executes just before EndFrameBarrier.
 * You can use CreateEventQueue for the same type from different systems or even multiple times from the same system.
   * In the case of the same system, it's slightly faster to reuse the same queue if systems have correct dependencies.
 * The system calling CreateEventQueue passes a reference to itself to the EntityEventSystem and this is used to ensure dependencies are completed before EntityEventSystem is updated.
 
-### CreateBufferEvent
+#### CreateBufferEvent
 ```c#
 void CreateBufferEvent<T, TB>(T component, NativeArray<TB> buffer)
 ```
