@@ -25,6 +25,8 @@ The EntityEventSystem will batch create create entities for all these components
 void CreateBufferEvent<T, TB>(T component, NativeArray<TB> buffer)
 ```
 Works similar to CreateEventQueue except it will add a component T and BufferArray<TB> to the entity.
+ 
+**Note:** you do not need to worry about disposing the NativeArray<TB> as this will be done for you.
 
 ## Containers
 * NativeUnit<T> - Let's you effectively pass a 'reference' of a struct between jobs.
