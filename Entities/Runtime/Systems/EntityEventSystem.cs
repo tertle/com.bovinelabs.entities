@@ -21,6 +21,7 @@ namespace BovineLabs.Entities.Systems
     /// The BatchBarrierSystem.
     /// </summary>
     [UsedImplicitly(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
+    [UpdateBefore(typeof(EndFrameBarrier))]
     public sealed class EntityEventSystem : ComponentSystem
     {
         private readonly Dictionary<Type, IEventBatch> types = new Dictionary<Type, IEventBatch>();
