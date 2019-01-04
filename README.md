@@ -3,7 +3,8 @@
 ## Systems
 ### EntityEventSystem
 https://forum.unity.com/threads/batch-entitycommandbuffer.593569/
-Easily create simple events extremeply efficiently.
+
+Easily create lots of events extremely efficiently.
 
 #### How to use
 
