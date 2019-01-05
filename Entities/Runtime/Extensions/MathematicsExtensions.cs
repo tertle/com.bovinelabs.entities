@@ -52,5 +52,40 @@ namespace BovineLabs.Entities.Extensions
         /// <param name="q">The <see cref="quaternion"/> rotation.</param>
         /// <returns>The forward axis in euler angles.</returns>
         public static float3 Forward(this quaternion q) => new float3x3(q).c2;
+
+        /*/// <summary>
+        /// Gets the position from a transform matrix.
+        /// </summary>
+        /// <param name="matrix">The transform matrix.</param>
+        /// <returns>The position.</returns>
+        public static float3 GetPosition(this float4x4 matrix) => matrix.c3.xyz;
+
+        /// <summary>
+        /// Gets the rotation from a transform matrix.
+        /// </summary>
+        /// <param name="matrix">The transform matrix.</param>
+        /// <returns>The rotation.</returns>
+        public static quaternion GetRotation(this float4x4 matrix) => new quaternion(matrix); // this only works when scale = 1
+
+        /// <summary>
+        /// Gets the scale from a transform matrix.
+        /// </summary>
+        /// <param name="matrix">The transform matrix.</param>
+        /// <returns>The lossy scale.</returns>
+        public static float3 GetLossyScale(this float4x4 matrix) => new float3(
+                math.length(matrix.c0.xyz),
+                math.length(matrix.c1.xyz),
+                math.length(matrix.c2.xyz));*/
+
+        /// <summary>
+        /// Scales a transform matrix.
+        /// </summary>
+        /// <param name="matrix">The transform matrix.</param>
+        /// <param name="scale">The scale.</param>
+        /// <returns>The scaled matrix.</returns>
+        public static float4x4 Scale(this float4x4 matrix, float3 scale)
+        {
+            return math.mul(matrix, float4x4.Scale(scale));
+        }
     }
 }
