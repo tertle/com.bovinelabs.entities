@@ -4,7 +4,10 @@
 
 namespace BovineLabs.Entities.Extensions
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
     using Unity.Mathematics;
+    using UnityEngine.Assertions;
 
     /// <summary>
     /// Extensions for types within the <see cref="Unity.Mathematics"/> namespace.
@@ -61,12 +64,18 @@ namespace BovineLabs.Entities.Extensions
         public static float3 GetPosition(this float4x4 matrix) => matrix.c3.xyz;
 
         // TODO this only works when scale = 1, need better solution
-        /*/// <summary>
+        /// <summary>
         /// Gets the rotation from a transform matrix.
         /// </summary>
         /// <param name="matrix">The transform matrix.</param>
         /// <returns>The rotation.</returns>
-        public static quaternion GetRotation(this float4x4 matrix) => new quaternion(matrix); */
+        public static quaternion GetRotation(this float4x4 matrix)
+        {
+            var scale = GetScale(matrix);
+            var inverted = Invert(scale);
+            matrix = matrix.ScaleBy(inverted);
+            return new quaternion(matrix);
+        }
 
         /// <summary>
         /// Gets the scale from a transform matrix.
@@ -74,9 +83,9 @@ namespace BovineLabs.Entities.Extensions
         /// <param name="matrix">The transform matrix.</param>
         /// <returns>The lossy scale.</returns>
         public static float3 GetScale(this float4x4 matrix) => new float3(
-                math.length(matrix.c0.xyz),
-                math.length(matrix.c1.xyz),
-                math.length(matrix.c2.xyz));
+            math.length(matrix.c0.xyz),
+            math.length(matrix.c1.xyz),
+            math.length(matrix.c2.xyz));
 
         /// <summary>
         /// Gets the squared scale from a transform matrix.
@@ -109,6 +118,49 @@ namespace BovineLabs.Entities.Extensions
             var scaleSqr = matrix.GetScaleSqr();
             float largestScaleSqr = math.cmax(scaleSqr);
             return math.sqrt(largestScaleSqr);
+        }
+
+        /// <summary>
+        /// Transforms a position by this matrix.
+        /// </summary>
+        /// <remarks>
+        /// Mimics <see cref="UnityEngine.Matrix4x4.MultiplyPoint3x4"/>.
+        /// </remarks>
+        /// <param name="matrix">The matrix.</param>
+        /// <param name="point">The point to transform.</param>
+        /// <returns>The transformed point.</returns>
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Using same naming as Matrix4x4.MultiplyPoint3x4")]
+        public static float3 MultiplyPoint3x4(this float4x4 matrix, float3 point)
+        {
+            return math.mul(matrix, new float4(point, 1.0f)).xyz;
+        }
+
+        /// <summary>
+        /// Safely inverts a vector. 0 returns 0.
+        /// </summary>
+        /// <param name="f">The vector to invert.</param>
+        /// <returns>The inverse of <see cref="f"/>.</returns>
+        public static float3 InvertSafe(float3 f)
+        {
+            var x = Math.Abs(f.x) < float.Epsilon ? 0 : 1 / f.x;
+            var y = Math.Abs(f.y) < float.Epsilon ? 0 : 1 / f.y;
+            var z = Math.Abs(f.z) < float.Epsilon ? 0 : 1 / f.z;
+
+            return new float3(x, y, z);
+        }
+
+        /// <summary>
+        /// Inverts a vector.
+        /// </summary>
+        /// <param name="f">The vector to invert.</param>
+        /// <returns>The inverse of <see cref="f"/>.</returns>
+        public static float3 Invert(float3 f)
+        {
+            Assert.IsTrue(Math.Abs(f.x) > float.Epsilon);
+            Assert.IsTrue(Math.Abs(f.y) > float.Epsilon);
+            Assert.IsTrue(Math.Abs(f.z) > float.Epsilon);
+
+            return new float3(1 / f.x, 1 / f.y, 1 / f.z);
         }
     }
 }
