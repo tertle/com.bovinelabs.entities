@@ -5,13 +5,11 @@
 namespace BovineLabs.Entities.Helpers
 {
     using System;
-    using Sirenix.OdinInspector;
 
     /// <summary>
     /// Burst currently does not support <see cref="bool"/> so this is a simple wrapper that acts like bool.
     /// </summary>
     [Serializable]
-    [InlineProperty]
     public struct Bool : IEquatable<Bool>
     {
         /// <summary>

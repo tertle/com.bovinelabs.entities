@@ -5,6 +5,7 @@
     "unity": "2018.3",
     "displayName": "BovineLabs.Entities",
     "dependencies": {
-        "com.unity.entities": "0.0.12-preview.21"
+        "com.unity.entities": "0.0.12-preview.21",
+		"com.bovinelabs.naughtyattributes": "https://github.com/tertle/com.bovinelabs.naughtyattributes.git"
     }
 }

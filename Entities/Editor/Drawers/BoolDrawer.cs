@@ -1,4 +1,4 @@
-﻿// <copyright file="BoolDrawer.cs" company="Timothy Raines">
+﻿/*// <copyright file="BoolDrawer.cs" company="Timothy Raines">
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
@@ -7,7 +7,6 @@ namespace BovineLabs.Entities.Editor.Drawers
 {
     using BovineLabs.Entities.Helpers;
     using JetBrains.Annotations;
-    using Sirenix.OdinInspector.Editor;
     using UnityEditor;
     using UnityEngine;
 
@@ -24,4 +23,4 @@ namespace BovineLabs.Entities.Editor.Drawers
         }
     }
 }
-#endif
+#endif*/
