@@ -52,7 +52,6 @@ namespace BovineLabs.Entities.Extensions
                 Setup();
             }
 
-            var world = (World)worldPropertyInfo.GetValue(componentSystem);
             var barrierList = (BarrierSystem[])barrierListFieldInfo.GetValue(componentSystem);
 
             Array.Resize(ref barrierList, barrierList.Length + 1);
