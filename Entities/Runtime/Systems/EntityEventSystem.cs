@@ -29,6 +29,10 @@ namespace BovineLabs.Entities.Systems
         private readonly Dictionary<KeyValuePair<Type, Type>, IEventBatch> bufferTypes =
             new Dictionary<KeyValuePair<Type, Type>, IEventBatch>();
 
+        private readonly HashSet<JobComponentSystem> addedSystems = new HashSet<JobComponentSystem>();
+
+        private EntityEventSystemBarrier barrier;
+
         /// <summary>
         /// The interface for the batch systems.
         /// </summary>
@@ -62,7 +66,17 @@ namespace BovineLabs.Entities.Systems
                 create = this.types[typeof(T)] = new EventBatch<T>();
             }
 
-            return ((EventBatch<T>)create).GetNew(componentSystem);
+            if (this.addedSystems.Add(componentSystem))
+            {
+                if (this.barrier == null)
+                {
+                    this.barrier = this.World.CreateManager<EntityEventSystemBarrier>();
+                }
+
+                componentSystem.AddBarrier(this.barrier);
+            }
+
+            return ((EventBatch<T>)create).GetNew();
         }
 
         /// <summary>
@@ -108,6 +122,8 @@ namespace BovineLabs.Entities.Systems
         /// <inheritdoc />
         protected override void OnUpdate()
         {
+            this.barrier?.Update();
+
             var handles = new NativeArray<JobHandle>(this.types.Count + this.bufferTypes.Count, Allocator.TempJob);
 
             int index = 0;
@@ -139,7 +155,6 @@ namespace BovineLabs.Entities.Systems
         private class EventBatch<T> : EventBatchBase
             where T : struct, IComponentData
         {
-            private readonly HashSet<JobComponentSystem> dependencies = new HashSet<JobComponentSystem>();
             private readonly List<NativeQueue<T>> queues = new List<NativeQueue<T>>();
             private readonly EntityArchetypeQuery query;
 
@@ -158,13 +173,11 @@ namespace BovineLabs.Entities.Systems
             /// <inheritdoc />
             protected override ComponentType[] ArchetypeTypes { get; } = { typeof(T) };
 
-            public NativeQueue<T> GetNew(JobComponentSystem componentSystem)
+            public NativeQueue<T> GetNew()
             {
                 // Having allocation leak warnings when using TempJob
                 var queue = new NativeQueue<T>(Allocator.Persistent);
                 this.queues.Add(queue);
-
-                this.dependencies.Add(componentSystem);
 
                 return queue;
             }
@@ -190,23 +203,6 @@ namespace BovineLabs.Entities.Systems
                 }
 
                 return sum;
-            }
-
-            protected override void BeforeUpdate()
-            {
-                Profiler.BeginSample("Dependencies");
-
-                JobHandle dependencyHandle = default;
-
-                foreach (var system in this.dependencies)
-                {
-                    dependencyHandle = JobHandle.CombineDependencies(dependencyHandle, system.GetJobHandle());
-                }
-
-                dependencyHandle.Complete();
-                this.dependencies.Clear();
-
-                Profiler.EndSample();
             }
 
             /// <inheritdoc />
@@ -376,8 +372,6 @@ namespace BovineLabs.Entities.Systems
             /// <returns>A default handle.</returns>
             public JobHandle Update(EntityManager entityManager)
             {
-                this.BeforeUpdate();
-
                 this.DestroyEntities(entityManager);
 
                 if (!this.CreateEntities(entityManager))
@@ -407,10 +401,6 @@ namespace BovineLabs.Entities.Systems
             }
 
             protected abstract int GetCount();
-
-            protected virtual void BeforeUpdate()
-            {
-            }
 
             protected abstract JobHandle SetComponentData(EntityManager entityManager, NativeArray<Entity> entities);
 
@@ -451,6 +441,13 @@ namespace BovineLabs.Entities.Systems
                 Profiler.EndSample();
                 return true;
             }
+        }
+
+        /// <summary>
+        /// A fake barrier to ensure dependencies.
+        /// </summary>
+        private class EntityEventSystemBarrier : BarrierSystem
+        {
         }
     }
 }

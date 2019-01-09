@@ -17,7 +17,6 @@ namespace BovineLabs.Entities.Extensions
         private static bool setup;
         private static PropertyInfo worldPropertyInfo;
         private static FieldInfo barrierListFieldInfo;
-        private static FieldInfo previousFrameDependency;
 
         /// <summary>
         /// Gets or creates a barrier and correctly adds it to the barrier list.
@@ -46,21 +45,27 @@ namespace BovineLabs.Entities.Extensions
             return barrier;
         }
 
-        public static JobHandle GetJobHandle(this JobComponentSystem componentSystem)
+        public static void AddBarrier(this JobComponentSystem componentSystem, BarrierSystem barrier)
         {
             if (!setup)
             {
                 Setup();
             }
 
-            return (JobHandle)previousFrameDependency.GetValue(componentSystem);
+            var world = (World)worldPropertyInfo.GetValue(componentSystem);
+            var barrierList = (BarrierSystem[])barrierListFieldInfo.GetValue(componentSystem);
+
+            Array.Resize(ref barrierList, barrierList.Length + 1);
+
+            barrierList[barrierList.Length - 1] = barrier;
+
+            barrierListFieldInfo.SetValue(componentSystem, barrierList);
         }
 
         private static void Setup()
         {
             worldPropertyInfo = CreateWorldGet();
             barrierListFieldInfo = CreateBarrierListGet();
-            previousFrameDependency = CreatePreviousFrameDependencyGet();
 
             setup = true;
         }
@@ -82,19 +87,6 @@ namespace BovineLabs.Entities.Extensions
         {
             var fieldInfo =
                 typeof(JobComponentSystem).GetField("m_BarrierList", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (fieldInfo == null)
-            {
-                throw new NullReferenceException("m_BarrierList changed");
-            }
-
-            return fieldInfo;
-        }
-
-        private static FieldInfo CreatePreviousFrameDependencyGet()
-        {
-            var fieldInfo =
-                typeof(JobComponentSystem).GetField("m_PreviousFrameDependency", BindingFlags.NonPublic | BindingFlags.Instance);
 
             if (fieldInfo == null)
             {
