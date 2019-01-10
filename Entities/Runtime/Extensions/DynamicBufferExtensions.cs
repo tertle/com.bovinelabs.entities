@@ -109,5 +109,20 @@ namespace BovineLabs.Entities.Extensions
 
             UnsafeUtility.MemCpy(nativeArray.GetUnsafePtr(), buffer.GetUnsafePtr(), buffer.Length * (long)UnsafeUtility.SizeOf<T>());
         }
+
+        /// <summary>
+        /// Fast element removal when order is not important. Replaces the element at <see cref="index"/> with
+        /// the last element in the <see cref="DynamicBuffer{T}"/> and reduces length by 1.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="buffer">The <see cref="DynamicBuffer{T}"/> to remove from.</param>
+        /// <param name="index">The index to remove.</param>
+        public static void RemoveAtSwapBack<T>(this DynamicBuffer<T> buffer, int index)
+            where T : struct
+        {
+            var newLength = buffer.Length - 1;
+            buffer[index] = buffer[newLength];
+            buffer.ResizeUninitialized(newLength);
+        }
     }
 }
