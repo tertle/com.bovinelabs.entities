@@ -2,18 +2,15 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Entities.Tests.Containers
+namespace BovineLabs.Entities.Tests.Jobs
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.InteropServices;
-    using BovineLabs.Entities.Containers;
+    using BovineLabs.Entities.Jobs;
     using NUnit.Framework;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities.Tests;
-    using UnityEditor;
-    using JobNativeMultiHashMapUniqueHashExtensions = BovineLabs.Entities.Containers.JobNativeMultiHashMapUniqueHashExtensions;
 
     /// <summary>
     /// The JobProcessNativeMultiHashMapTests.

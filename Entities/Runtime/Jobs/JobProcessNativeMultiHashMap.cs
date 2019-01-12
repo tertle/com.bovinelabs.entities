@@ -2,7 +2,7 @@
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Entities.Containers
+namespace BovineLabs.Entities.Jobs
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -29,8 +29,22 @@ namespace BovineLabs.Entities.Containers
         void Execute(TKey key, TValue value);
     }
 
-    public static class JobNativeMultiHashMapUniqueHashExtensions
+    /// <summary>
+    /// Provides extensions to schedule <see cref="IJobProcessNativeMultiHashMap{TKey, TValue}"/>.
+    /// </summary>
+    public static class JobProcessNativeMultiHashMapExtensions
     {
+        /// <summary>
+        /// Schedules the <see cref="IJobProcessNativeMultiHashMap{TKey, TValue}"/> in parallel.
+        /// </summary>
+        /// <typeparam name="TJob">Type of job.</typeparam>
+        /// <typeparam name="TKey">Type of the key for the <see cref="NativeMultiHashMap{TKey,TValue}"/>.</typeparam>
+        /// <typeparam name="TValue">Type of the value for the <see cref="NativeMultiHashMap{TKey,TValue}"/>.</typeparam>
+        /// <param name="jobData">The job.</param>
+        /// <param name="hashMap">The <see cref="NativeMultiHashMap{TKey,TValue}"/> to iterate.</param>
+        /// <param name="minIndicesPerJobCount">The minIndicesPerJobCount.</param>
+        /// <param name="dependsOn">Optional dependency.</param>
+        /// <returns>A <see cref="JobHandle"/>.</returns>
         public static unsafe JobHandle Schedule<TJob, TKey, TValue>(
             this TJob jobData,
             NativeMultiHashMap<TKey, TValue> hashMap,
