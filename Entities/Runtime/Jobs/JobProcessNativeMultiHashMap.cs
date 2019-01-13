@@ -72,52 +72,6 @@ namespace BovineLabs.Entities.Jobs
                 minIndicesPerJobCount);
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal unsafe struct NativeMultiHashMapImposter<TKey, TValue>
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
-        {
-            [NativeDisableUnsafePtrRestriction]
-            internal NativeHashMapDataImposter* m_Buffer;
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            private AtomicSafetyHandle m_Safety;
-
-            [NativeSetClassTypeToNullOnSchedule]
-            private DisposeSentinel m_DisposeSentinel;
-#endif
-
-            private Allocator m_AllocatorLabel;
-
-            public static implicit operator NativeMultiHashMapImposter<TKey, TValue>(NativeMultiHashMap<TKey, TValue> hashMap)
-            {
-                var ptr = UnsafeUtility.AddressOf(ref hashMap);
-                UnsafeUtility.CopyPtrToStructure(ptr, out NativeMultiHashMapImposter<TKey, TValue> imposter);
-                return imposter;
-            }
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal unsafe struct NativeHashMapDataImposter
-        {
-            public byte* values;
-            public byte* keys;
-            public byte* next;
-            public byte* buckets;
-            public int capacity;
-
-            public int bucketCapacityMask; // = bucket capacity - 1
-
-            // Add padding between fields to ensure they are on separate cache-lines
-            private fixed byte padding1[60];
-
-            public fixed int firstFreeTLS[JobsUtility.MaxJobThreadCount * IntsPerCacheLine];
-            public int allocatedIndexLength;
-
-            // 64 is the cache line size on x86, arm usually has 32 - so it is possible to save some memory there
-            public const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);
-        }
-
         private unsafe struct NativeMultiHashMapUniqueHashJobStruct<TJob, TKey, TValue>
             where TJob : struct, IJobProcessNativeMultiHashMap<TKey, TValue>
             where TKey : struct, IEquatable<TKey>
@@ -188,5 +142,51 @@ namespace BovineLabs.Entities.Jobs
                 public TJob JobData;
             }
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct NativeMultiHashMapImposter<TKey, TValue>
+        where TKey : struct, IEquatable<TKey>
+        where TValue : struct
+    {
+        [NativeDisableUnsafePtrRestriction]
+        internal NativeHashMapDataImposter* m_Buffer;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        private AtomicSafetyHandle m_Safety;
+
+        [NativeSetClassTypeToNullOnSchedule]
+        private DisposeSentinel m_DisposeSentinel;
+#endif
+
+        private Allocator m_AllocatorLabel;
+
+        public static implicit operator NativeMultiHashMapImposter<TKey, TValue>(NativeMultiHashMap<TKey, TValue> hashMap)
+        {
+            var ptr = UnsafeUtility.AddressOf(ref hashMap);
+            UnsafeUtility.CopyPtrToStructure(ptr, out NativeMultiHashMapImposter<TKey, TValue> imposter);
+            return imposter;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct NativeHashMapDataImposter
+    {
+        public byte* values;
+        public byte* keys;
+        public byte* next;
+        public byte* buckets;
+        public int capacity;
+
+        public int bucketCapacityMask; // = bucket capacity - 1
+
+        // Add padding between fields to ensure they are on separate cache-lines
+        private fixed byte padding1[60];
+
+        public fixed int firstFreeTLS[JobsUtility.MaxJobThreadCount * IntsPerCacheLine];
+        public int allocatedIndexLength;
+
+        // 64 is the cache line size on x86, arm usually has 32 - so it is possible to save some memory there
+        public const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);
     }
 }
