@@ -27,15 +27,15 @@ namespace BovineLabs.Entities.Tests.Extensions
             {
                 for (var j = 0; j < values; j++)
                 {
-                    map.Add(i, j);
+                    map.Add(i, i + j);
                 }
             }
 
-            using (NativeMultiHashMapEnumerator<int, int> e = map.GetEnumerator())
+            using (var enumerator = map.GetEnumerator())
             {
-                while (e.MoveNext())
+                while (enumerator.MoveNext())
                 {
-                    KeyValuePair<int, int> kvp = e.Current;
+                    KeyValuePair<int, int> kvp = enumerator.Current;
 
                     if (!result.TryGetValue(kvp.Key, out var list))
                     {
@@ -54,7 +54,7 @@ namespace BovineLabs.Entities.Tests.Extensions
 
                 for (var i = 0; i < values; i++)
                 {
-                    Assert.AreEqual(i, kvp.Value[i]);
+                    Assert.AreEqual(i + kvp.Key, kvp.Value[i]);
                 }
             }
 
