@@ -48,7 +48,7 @@ namespace BovineLabs.Entities.Tests.Extensions
 
             foreach (var kvp in result)
             {
-                Assert.AreEqual(8, kvp.Value.Count);
+                Assert.AreEqual(values, kvp.Value.Count);
 
                 kvp.Value.Sort();
 

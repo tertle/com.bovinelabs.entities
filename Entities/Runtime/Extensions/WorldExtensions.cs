@@ -121,8 +121,8 @@ namespace BovineLabs.Entities.Extensions
         private static Action<World, int> CreateVersionSetter()
         {
             var versionFieldInfo = typeof(World).GetProperty(
-                "Version",
-                BindingFlags.Public | BindingFlags.Instance);
+                nameof(World.Version),
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
             if (versionFieldInfo == null)
             {

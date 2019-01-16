@@ -15,7 +15,7 @@ namespace BovineLabs.Entities.Extensions
     public static class JobComponentSystemExtensions
     {
         private static bool setup;
-        private static PropertyInfo worldPropertyInfo;
+        private static FieldInfo worldFieldInfo;
         private static FieldInfo barrierListFieldInfo;
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace BovineLabs.Entities.Extensions
                 Setup();
             }
 
-            var world = (World)worldPropertyInfo.GetValue(componentSystem);
+            var world = (World)worldFieldInfo.GetValue(componentSystem);
             var barrierList = (BarrierSystem[])barrierListFieldInfo.GetValue(componentSystem);
 
             Array.Resize(ref barrierList, barrierList.Length + 1);
@@ -63,29 +63,29 @@ namespace BovineLabs.Entities.Extensions
 
         private static void Setup()
         {
-            worldPropertyInfo = CreateWorldGet();
+            worldFieldInfo = CreateWorldGet();
             barrierListFieldInfo = CreateBarrierListGet();
 
             setup = true;
         }
 
-        private static PropertyInfo CreateWorldGet()
+        private static FieldInfo CreateWorldGet()
         {
-            var propertyInfo =
-                typeof(ComponentSystemBase).GetProperty("World", BindingFlags.NonPublic | BindingFlags.Instance);
+            var fieldInfo =
+                typeof(ComponentSystemBase).GetField("m_World", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-            if (propertyInfo == null)
+            if (fieldInfo == null)
             {
                 throw new NullReferenceException("World changed");
             }
 
-            return propertyInfo;
+            return fieldInfo;
         }
 
         private static FieldInfo CreateBarrierListGet()
         {
             var fieldInfo =
-                typeof(JobComponentSystem).GetField("m_BarrierList", BindingFlags.NonPublic | BindingFlags.Instance);
+                typeof(JobComponentSystem).GetField("m_BarrierList", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
             if (fieldInfo == null)
             {

@@ -7,6 +7,7 @@ namespace BovineLabs.Entities.Extensions
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using BovineLabs.Entities.Helpers;
     using BovineLabs.Entities.Jobs;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -63,10 +64,10 @@ namespace BovineLabs.Entities.Extensions
                 this.index = 0;
                 this.entryIndex = -1;
 
-                this.buckets = (int*)imposter.m_Buffer->buckets;
-                this.nextPtrs = (int*)imposter.m_Buffer->next;
-                this.keys = imposter.m_Buffer->keys;
-                this.values = imposter.m_Buffer->values;
+                this.buckets = (int*)imposter.Buffer->Buckets;
+                this.nextPtrs = (int*)imposter.Buffer->Next;
+                this.keys = imposter.Buffer->Keys;
+                this.values = imposter.Buffer->Values;
             }
 
             /// <inheritdoc />
@@ -80,7 +81,7 @@ namespace BovineLabs.Entities.Extensions
             /// <inheritdoc />
             public bool MoveNext()
             {
-                var length = this.hashMap.m_Buffer->bucketCapacityMask + 1;
+                var length = this.hashMap.Buffer->BucketCapacityMask + 1;
 
                 for (; this.index < length; this.index++)
                 {

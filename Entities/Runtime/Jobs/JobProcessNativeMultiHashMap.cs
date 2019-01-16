@@ -7,6 +7,7 @@ namespace BovineLabs.Entities.Jobs
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
+    using BovineLabs.Entities.Helpers;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs;
@@ -68,7 +69,7 @@ namespace BovineLabs.Entities.Jobs
 
             return JobsUtility.ScheduleParallelFor(
                 ref scheduleParams,
-                fullData.HashMap.m_Buffer->bucketCapacityMask + 1,
+                fullData.HashMap.Buffer->BucketCapacityMask + 1,
                 minIndicesPerJobCount);
         }
 
@@ -115,10 +116,10 @@ namespace BovineLabs.Entities.Jobs
                         return;
                     }
 
-                    var buckets = (int*)fullData.HashMap.m_Buffer->buckets;
-                    var nextPtrs = (int*)fullData.HashMap.m_Buffer->next;
-                    var keys = fullData.HashMap.m_Buffer->keys;
-                    var values = fullData.HashMap.m_Buffer->values;
+                    var buckets = (int*)fullData.HashMap.Buffer->Buckets;
+                    var nextPtrs = (int*)fullData.HashMap.Buffer->Next;
+                    var keys = fullData.HashMap.Buffer->Keys;
+                    var values = fullData.HashMap.Buffer->Values;
 
                     for (int i = begin; i < end; i++)
                     {
@@ -142,51 +143,5 @@ namespace BovineLabs.Entities.Jobs
                 public TJob JobData;
             }
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct NativeMultiHashMapImposter<TKey, TValue>
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
-    {
-        [NativeDisableUnsafePtrRestriction]
-        internal NativeHashMapDataImposter* m_Buffer;
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-        private AtomicSafetyHandle m_Safety;
-
-        [NativeSetClassTypeToNullOnSchedule]
-        private DisposeSentinel m_DisposeSentinel;
-#endif
-
-        private Allocator m_AllocatorLabel;
-
-        public static implicit operator NativeMultiHashMapImposter<TKey, TValue>(NativeMultiHashMap<TKey, TValue> hashMap)
-        {
-            var ptr = UnsafeUtility.AddressOf(ref hashMap);
-            UnsafeUtility.CopyPtrToStructure(ptr, out NativeMultiHashMapImposter<TKey, TValue> imposter);
-            return imposter;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct NativeHashMapDataImposter
-    {
-        public byte* values;
-        public byte* keys;
-        public byte* next;
-        public byte* buckets;
-        public int capacity;
-
-        public int bucketCapacityMask; // = bucket capacity - 1
-
-        // Add padding between fields to ensure they are on separate cache-lines
-        private fixed byte padding1[60];
-
-        public fixed int firstFreeTLS[JobsUtility.MaxJobThreadCount * IntsPerCacheLine];
-        public int allocatedIndexLength;
-
-        // 64 is the cache line size on x86, arm usually has 32 - so it is possible to save some memory there
-        public const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);
     }
 }

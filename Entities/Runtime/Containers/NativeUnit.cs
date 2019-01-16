@@ -100,8 +100,7 @@ namespace BovineLabs.Entities.Containers
         {
             if (!UnsafeUtility.IsValidAllocator(this.m_AllocatorLabel))
             {
-                throw new InvalidOperationException(
-                    "The NativeArray can not be Disposed because it was not allocated with a valid allocator.");
+                throw new Exception("The NativeArray can not be Disposed because it was not allocated with a valid allocator.");
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
