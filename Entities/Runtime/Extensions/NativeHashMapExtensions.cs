@@ -16,6 +16,13 @@ namespace BovineLabs.Entities.Extensions
     /// </summary>
     public static class NativeHashMapExtensions
     {
+        /// <summary>
+        /// Get an Enumerator for a <see cref="NativeHashMap{TKey,TValue}"/>.
+        /// </summary>
+        /// <typeparam name="TKey">They key type of the hash map.</typeparam>
+        /// <typeparam name="TValue">the value type of the hash map.</typeparam>
+        /// <param name="hashMap">The hash map.</param>
+        /// <returns>The enumerator for the hash map.</returns>
         public static NativeHashMapEnumerator<TKey, TValue> GetEnumerator<TKey, TValue>(
             this NativeHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
@@ -25,6 +32,12 @@ namespace BovineLabs.Entities.Extensions
             return new NativeHashMapEnumerator<TKey, TValue>(ref hashMap);
         }
 
+
+        /// <summary>
+        /// A struct to handle enumerators of a <see cref="NativeHashMap{TKey,TValue}"/>.
+        /// </summary>
+        /// <typeparam name="TKey">The key.</typeparam>
+        /// <typeparam name="TValue">The value.</typeparam>
         public unsafe struct NativeHashMapEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue>>
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
@@ -36,6 +49,10 @@ namespace BovineLabs.Entities.Extensions
 
             private int index;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="NativeHashMapEnumerator{TKey, TValue}"/> struct.
+            /// </summary>
+            /// <param name="hashMap">The hash map to iterate.</param>
             internal NativeHashMapEnumerator(ref NativeHashMap<TKey, TValue> hashMap)
             {
                 // Convert to imposter so we can access internal fields

@@ -1,4 +1,4 @@
-﻿// <copyright file="NativeMultiHashMapExtensions.cs" company="Timothy Raines">
+﻿// <copyright file="NativeMultiHashMapExtensionsTests.cs" company="Timothy Raines">
 //     Copyright (c) Timothy Raines. All rights reserved.
 // </copyright>
 

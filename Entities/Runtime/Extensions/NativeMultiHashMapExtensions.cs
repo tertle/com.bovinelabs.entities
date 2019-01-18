@@ -8,7 +8,6 @@ namespace BovineLabs.Entities.Extensions
     using System.Collections;
     using System.Collections.Generic;
     using BovineLabs.Entities.Helpers;
-    using BovineLabs.Entities.Jobs;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -22,7 +21,7 @@ namespace BovineLabs.Entities.Extensions
         /// </summary>
         /// <typeparam name="TKey">They key type of the hash map.</typeparam>
         /// <typeparam name="TValue">the value type of the hash map.</typeparam>
-        /// <param name="hashMap">The hash map</param>
+        /// <param name="hashMap">The hash map.</param>
         /// <returns>The enumerator for the hash map.</returns>
         public static NativeMultiHashMapEnumerator<TKey, TValue> GetEnumerator<TKey, TValue>(
             this NativeMultiHashMap<TKey, TValue> hashMap)
@@ -54,7 +53,7 @@ namespace BovineLabs.Entities.Extensions
             /// <summary>
             /// Initializes a new instance of the <see cref="NativeMultiHashMapEnumerator{TKey, TValue}"/> struct.
             /// </summary>
-            /// <param name="hashMap">The hashmap to iterate.</param>
+            /// <param name="hashMap">The hash map to iterate.</param>
             internal NativeMultiHashMapEnumerator(ref NativeMultiHashMap<TKey, TValue> hashMap)
             {
                 // Convert to imposter so we can access internal fields
