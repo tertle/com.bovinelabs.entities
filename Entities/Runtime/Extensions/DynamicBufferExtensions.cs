@@ -124,5 +124,13 @@ namespace BovineLabs.Entities.Extensions
             buffer[index] = buffer[newLength];
             buffer.ResizeUninitialized(newLength);
         }
+
+        public static void AddRange<T>(this DynamicBuffer<T> buffer, T[] array)
+            where T : struct
+        {
+            var a = new NativeArray<T>(array, Allocator.Temp);
+            buffer.AddRange(a);
+            a.Dispose();
+        }
     }
 }
