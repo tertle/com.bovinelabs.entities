@@ -22,7 +22,9 @@ namespace BovineLabs.Entities.Extensions
                 nativeArray.Length,
                 Allocator.Invalid);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, AtomicSafetyHandle.Create());
+#endif
 
             return array;
         }

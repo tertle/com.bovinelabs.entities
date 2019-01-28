@@ -139,6 +139,7 @@ namespace BovineLabs.Entities.Containers
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
 #endif
+
                 // The actual increment is implemented with an atomic since it can be incremented by multiple threads at the same time
                 return Interlocked.Increment(ref *this.m_Counter);
             }
