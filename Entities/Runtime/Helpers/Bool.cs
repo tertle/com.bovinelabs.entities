@@ -1,10 +1,13 @@
-﻿// <copyright file="Bool.cs" company="Timothy Raines">
-//     Copyright (c) Timothy Raines. All rights reserved.
+﻿// <copyright file="Bool.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Entities.Helpers
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
+    using UnityEngine;
+    using UnityEngine.Serialization;
 
     /// <summary>
     /// Burst currently does not support <see cref="bool"/> so this is a simple wrapper that acts like bool.
@@ -15,7 +18,9 @@ namespace BovineLabs.Entities.Helpers
         /// <summary>
         /// The value of the Bool. Should only be used by serializer.
         /// </summary>
-        public byte Value;
+        [FormerlySerializedAs("Value")]
+        [SerializeField]
+        private byte value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Bool"/> struct.
@@ -23,7 +28,7 @@ namespace BovineLabs.Entities.Helpers
         /// <param name="value">The default value.</param>
         public Bool(bool value)
         {
-            this.Value = value ? (byte)1 : (byte)0;
+            this.value = value ? (byte)1 : (byte)0;
         }
 
         public static implicit operator Bool(bool b)
@@ -33,13 +38,23 @@ namespace BovineLabs.Entities.Helpers
 
         public static implicit operator bool(Bool b)
         {
-            return b.Value != 0;
+            return b.value != 0;
+        }
+
+        public static bool operator ==(Bool left, Bool right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Bool left, Bool right)
+        {
+            return !left.Equals(right);
         }
 
         /// <inheritdoc/>
         public bool Equals(Bool other)
         {
-            return this.Value == other.Value;
+            return this.value == other.value;
         }
 
         /// <inheritdoc/>
@@ -49,15 +64,16 @@ namespace BovineLabs.Entities.Helpers
         }
 
         /// <inheritdoc/>
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode", Justification = "Can't be readonly due to required inspector support support")]
         public override int GetHashCode()
         {
-            return this.Value.GetHashCode();
+            return this.value.GetHashCode();
         }
 
         /// <inheritdoc/>
         public override string ToString()
         {
-            return (this.Value != 0).ToString();
+            return (this.value != 0).ToString();
         }
     }
 }

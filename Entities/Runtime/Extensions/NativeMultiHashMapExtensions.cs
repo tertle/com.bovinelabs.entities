@@ -1,5 +1,5 @@
-﻿// <copyright file="NativeMultiHashMapExtensions.cs" company="Timothy Raines">
-//     Copyright (c) Timothy Raines. All rights reserved.
+﻿// <copyright file="NativeMultiHashMapExtensions.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Entities.Extensions
@@ -27,7 +27,6 @@ namespace BovineLabs.Entities.Extensions
             this NativeMultiHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
-
         {
             return new NativeMultiHashMapEnumerator<TKey, TValue>(ref hashMap);
         }

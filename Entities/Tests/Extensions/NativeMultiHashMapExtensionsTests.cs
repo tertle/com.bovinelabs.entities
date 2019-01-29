@@ -1,5 +1,5 @@
-﻿// <copyright file="NativeMultiHashMapExtensionsTests.cs" company="Timothy Raines">
-//     Copyright (c) Timothy Raines. All rights reserved.
+﻿// <copyright file="NativeMultiHashMapExtensionsTests.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Entities.Tests.Extensions
@@ -14,6 +14,9 @@ namespace BovineLabs.Entities.Tests.Extensions
     /// </summary>
     public class NativeMultiHashMapExtensionsTest
     {
+        /// <summary>
+        /// Tests the GetEnumerator method.
+        /// </summary>
         [Test]
         public void GetEnumerator()
         {
@@ -60,7 +63,5 @@ namespace BovineLabs.Entities.Tests.Extensions
 
             map.Dispose();
         }
-
-
     }
 }

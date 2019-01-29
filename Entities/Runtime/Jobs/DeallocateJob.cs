@@ -1,5 +1,5 @@
-﻿// <copyright file="DeallocateJob.cs" company="Timothy Raines">
-//     Copyright (c) Timothy Raines. All rights reserved.
+﻿// <copyright file="DeallocateJob.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Entities.Jobs

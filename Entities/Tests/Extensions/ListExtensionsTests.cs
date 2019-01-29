@@ -1,5 +1,5 @@
-﻿// <copyright file="ListExtensionsTests.cs" company="Timothy Raines">
-//     Copyright (c) Timothy Raines. All rights reserved.
+﻿// <copyright file="ListExtensionsTests.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Entities.Tests.Extensions

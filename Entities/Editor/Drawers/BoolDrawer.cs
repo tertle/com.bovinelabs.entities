@@ -1,26 +1,30 @@
-﻿/*// <copyright file="BoolDrawer.cs" company="Timothy Raines">
-//     Copyright (c) Timothy Raines. All rights reserved.
+﻿// <copyright file="BoolDrawer.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if ODIN_INSPECTOR
 namespace BovineLabs.Entities.Editor.Drawers
 {
     using BovineLabs.Entities.Helpers;
-    using JetBrains.Annotations;
     using UnityEditor;
     using UnityEngine;
 
-    /// <summary>
-    /// Draws <see cref="Bool"/> in the inspector.
-    /// </summary>
-    [UsedImplicitly]
-    public class BoolDrawer : OdinValueDrawer<Bool>
+    [CustomPropertyDrawer(typeof(Bool))]
+    public class BoolDrawer : PropertyDrawer
     {
-        /// <inheritdoc />
-        protected override void DrawPropertyLayout(GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty prop, GUIContent label)
         {
-            this.ValueEntry.SmartValue = EditorGUILayout.Toggle(label, this.ValueEntry.SmartValue);
+            EditorGUI.BeginProperty(position, label, prop);
+            SerializedProperty value = prop.FindPropertyRelative("value");
+            position = EditorGUI.PrefixLabel(position, label);
+
+            EditorGUI.BeginChangeCheck();
+            bool currentVal = EditorGUI.Toggle(position, value.boolValue);
+            if (EditorGUI.EndChangeCheck())
+            {
+                value.boolValue = currentVal;
+            }
+
+            EditorGUI.EndProperty();
         }
     }
 }
-#endif*/

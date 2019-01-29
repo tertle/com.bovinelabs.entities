@@ -1,5 +1,5 @@
-﻿// <copyright file="TextAssetReader.cs" company="Timothy Raines">
-//     Copyright (c) Timothy Raines. All rights reserved.
+﻿// <copyright file="TextAssetReader.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Entities.Helpers
@@ -17,6 +17,10 @@ namespace BovineLabs.Entities.Helpers
         private byte[] bytes;
         private int offset;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextAssetReader"/> class.
+        /// </summary>
+        /// <param name="textAsset">The <see cref="TextAsset"/>.</param>
         public TextAssetReader(TextAsset textAsset)
         {
             this.bytes = textAsset.bytes;
@@ -33,7 +37,6 @@ namespace BovineLabs.Entities.Helpers
         {
             fixed (byte* fixedBuffer = this.bytes)
             {
-                //UnsafeUtility.MemCpyStride(data, UnsafeUtility.SizeOf<byte>() * this.offset, fixedBuffer, 0, UnsafeUtility.SizeOf<byte>(), count);
                 UnsafeUtilityExtensions.MemCpy(data, 0, fixedBuffer, this.offset, UnsafeUtility.SizeOf<byte>(), count);
                 this.offset += count;
             }
