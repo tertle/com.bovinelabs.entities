@@ -1,7 +1,7 @@
 {
     "name": "com.bovinelabs.entities",
     "description": "Collection of extensions, systems and jobs for unity ecs.",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "unity": "2018.3",
     "displayName": "BovineLabs.Entities",
     "dependencies": {
