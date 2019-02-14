@@ -27,5 +27,7 @@ namespace BovineLabs.Entities.Helpers
 
         // 64 is the cache line size on x86, arm usually has 32 - so it is possible to save some memory there
         public const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);
+
+
     }
 }
