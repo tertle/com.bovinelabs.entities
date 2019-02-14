@@ -19,35 +19,56 @@ namespace BovineLabs.Entities.Tests.Extensions
         {
             const int elements = 64;
 
-            var map = new NativeHashMap<int, int>(elements, Allocator.TempJob);
-            var result = new Dictionary<int, int>();
-
-            for (var i = 0; i < elements; i++)
+            using (var map = new NativeHashMap<int, int>(elements, Allocator.TempJob))
             {
-                map.TryAdd(i, i + 1);
-            }
+                var result = new Dictionary<int, int>();
 
-            // Quick remove test
-            map.Remove(0);
-
-            using (var enumerator = map.GetEnumerator())
-            {
-                while (enumerator.MoveNext())
+                for (var i = 0; i < elements; i++)
                 {
-                    KeyValuePair<int, int> kvp = enumerator.Current;
-                    result.Add(kvp.Key, kvp.Value);
+                    map.TryAdd(i, i + 1);
+                }
+
+                // Quick remove test
+                map.Remove(0);
+
+                using (var enumerator = map.GetEnumerator())
+                {
+                    while (enumerator.MoveNext())
+                    {
+                        KeyValuePair<int, int> kvp = enumerator.Current;
+                        result.Add(kvp.Key, kvp.Value);
+                    }
+                }
+
+                Assert.AreEqual(elements - 1, result.Count);
+
+                for (var i = 1; i < elements; i++)
+                {
+                    Assert.IsTrue(result.TryGetValue(i, out var value));
+                    Assert.AreEqual(i + 1, value);
                 }
             }
+        }
 
-            Assert.AreEqual(elements - 1, result.Count);
-
-            for (var i = 1; i < elements; i++)
+        [Test]
+        public void TryReplaceValue()
+        {
+            using (var map = new NativeHashMap<int, int>(4, Allocator.TempJob))
             {
-                Assert.IsTrue(result.TryGetValue(i, out var value));
-                Assert.AreEqual(i + 1, value);
-            }
+                map.TryAdd(2, 2);
+                map.TryAdd(3, 2);
+                map.TryAdd(4, 4);
+                Assert.IsTrue(map.TryAdd(1, 2));
 
-            map.Dispose();
+                Assert.IsTrue(map.TryGetValue(1, out var value));
+                Assert.AreEqual(2, value);
+
+                Assert.IsTrue(map.TryReplaceValue(1, 3));
+                Assert.IsTrue(map.TryGetValue(1, out value));
+                Assert.AreEqual(3, value);
+
+                Assert.IsFalse(map.TryReplaceValue(0, 3));
+            }
         }
     }
 }
