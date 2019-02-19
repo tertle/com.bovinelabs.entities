@@ -63,7 +63,7 @@ namespace BovineLabs.Entities.Systems
         {
             if (!this.types.TryGetValue(typeof(T), out var create))
             {
-                create = this.types[typeof(T)] = new EventBatch<T>();
+                create = this.types[typeof(T)] = new EventBatch<T>(this.EntityManager);
             }
 
             if (this.addedSystems.Add(componentSystem))
@@ -156,18 +156,19 @@ namespace BovineLabs.Entities.Systems
             where T : struct, IComponentData
         {
             private readonly List<NativeQueue<T>> queues = new List<NativeQueue<T>>();
-            private readonly EntityArchetypeQuery query;
+            private readonly ComponentGroup query;
 
             private EntityArchetype archetype;
 
-            public EventBatch()
+            public EventBatch(EntityManager entityManager)
             {
-                this.query = new EntityArchetypeQuery
-                {
-                    Any = Array.Empty<ComponentType>(),
-                    None = Array.Empty<ComponentType>(),
-                    All = new[] { ComponentType.Create<T>() },
-                };
+                this.query = entityManager.CreateComponentGroup(ComponentType.Create<T>());
+                /*new EntityArchetypeQuery
+            {
+                Any = Array.Empty<ComponentType>(),
+                None = Array.Empty<ComponentType>(),
+                All = new[] { ComponentType.Create<T>() },
+            };*/
             }
 
             /// <inheritdoc />
@@ -210,7 +211,7 @@ namespace BovineLabs.Entities.Systems
             {
                 var componentType = entityManager.GetArchetypeChunkComponentType<T>(false);
 
-                var chunks = entityManager.CreateArchetypeChunkArray(this.query, Allocator.TempJob);
+                var chunks = this.query.CreateArchetypeChunkArray(Allocator.TempJob);
 
                 int startIndex = 0;
 
@@ -446,6 +447,7 @@ namespace BovineLabs.Entities.Systems
         /// <summary>
         /// A fake barrier to ensure dependencies.
         /// </summary>
+        [UsedImplicitly]
         private class EntityEventSystemBarrier : BarrierSystem
         {
         }
