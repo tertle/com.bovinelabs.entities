@@ -23,7 +23,7 @@ namespace BovineLabs.Entities.Tests.Systems
         {
             var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
-            var queue = eventSystem.CreateEventQueue<TestData>(this.EmptySystem);
+            var queue = eventSystem.CreateEventQueue<TestData>();
 
             var data0 = new TestData { Value = 0 };
             var data1 = new TestData { Value = 1 };
@@ -67,8 +67,8 @@ namespace BovineLabs.Entities.Tests.Systems
             var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
             Assert.AreNotEqual(
-                eventSystem.CreateEventQueue<TestData>(this.EmptySystem),
-                eventSystem.CreateEventQueue<TestData>(this.EmptySystem));
+                eventSystem.CreateEventQueue<TestData>(),
+                eventSystem.CreateEventQueue<TestData>());
         }
 
         /// <summary>
@@ -79,8 +79,8 @@ namespace BovineLabs.Entities.Tests.Systems
         {
             var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
-            var queue1 = eventSystem.CreateEventQueue<TestData>(this.EmptySystem);
-            var queue2 = eventSystem.CreateEventQueue<TestData>(this.EmptySystem);
+            var queue1 = eventSystem.CreateEventQueue<TestData>();
+            var queue2 = eventSystem.CreateEventQueue<TestData>();
 
             var data0 = new TestData { Value = 0 };
             var data1 = new TestData { Value = 1 };
@@ -124,8 +124,8 @@ namespace BovineLabs.Entities.Tests.Systems
         {
             var eventSystem = this.World.CreateManager<EntityEventSystem>();
 
-            var queue = eventSystem.CreateEventQueue<TestData>(this.EmptySystem);
-            var queue2 = eventSystem.CreateEventQueue<TestData2>(this.EmptySystem);
+            var queue = eventSystem.CreateEventQueue<TestData>();
+            var queue2 = eventSystem.CreateEventQueue<TestData2>();
 
             var data0 = new TestData { Value = 0 };
             var data1 = new TestData { Value = 1 };

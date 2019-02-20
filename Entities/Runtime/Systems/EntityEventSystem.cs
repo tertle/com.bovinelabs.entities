@@ -29,8 +29,6 @@ namespace BovineLabs.Entities.Systems
         private readonly Dictionary<KeyValuePair<Type, Type>, IEventBatch> bufferTypes =
             new Dictionary<KeyValuePair<Type, Type>, IEventBatch>();
 
-        private readonly HashSet<JobComponentSystem> addedSystems = new HashSet<JobComponentSystem>();
-
         private EntityEventSystemBarrier barrier;
 
         /// <summary>
@@ -58,22 +56,12 @@ namespace BovineLabs.Entities.Systems
         /// <typeparam name="T">The type of <see cref="IComponentData"/>.</typeparam>
         /// <param name="componentSystem">The component system getting the queue.</param>
         /// <returns>A <see cref="NativeQueue{T}"/> which any component that is added will be turned into a single frame event.</returns>
-        public NativeQueue<T> CreateEventQueue<T>(JobComponentSystem componentSystem)
+        public NativeQueue<T> CreateEventQueue<T>()
             where T : struct, IComponentData
         {
             if (!this.types.TryGetValue(typeof(T), out var create))
             {
                 create = this.types[typeof(T)] = new EventBatch<T>(this.EntityManager);
-            }
-
-            if (this.addedSystems.Add(componentSystem))
-            {
-                if (this.barrier == null)
-                {
-                    this.barrier = this.World.CreateManager<EntityEventSystemBarrier>();
-                }
-
-                componentSystem.AddBarrier(this.barrier);
             }
 
             return ((EventBatch<T>)create).GetNew();
@@ -99,6 +87,16 @@ namespace BovineLabs.Entities.Systems
             }
 
             ((EventBufferBatch<T, TB>)create).Enqueue(component, buffer);
+        }
+
+        public void AddJobHandleForProducer(JobHandle producerHandle)
+        {
+            if (this.barrier == null)
+            {
+                this.barrier = this.World.CreateManager<EntityEventSystemBarrier>();
+            }
+
+            this.barrier.AddJobHandleForProducer(producerHandle);
         }
 
         /// <inheritdoc />
