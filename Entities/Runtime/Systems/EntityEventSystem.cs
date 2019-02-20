@@ -87,6 +87,10 @@ namespace BovineLabs.Entities.Systems
             ((EventBufferBatch<T, TB>)create).Enqueue(component, buffer);
         }
 
+        /// <summary>
+        /// Add a dependency handle.
+        /// </summary>
+        /// <param name="handle">The dependency handle.</param>
         public void AddJobHandleForProducer(JobHandle handle)
         {
             this.producerHandle = JobHandle.CombineDependencies(this.producerHandle, handle);
