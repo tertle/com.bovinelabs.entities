@@ -20,7 +20,7 @@ namespace BovineLabs.Entities.Systems
     /// The BatchBarrierSystem.
     /// </summary>
     [UsedImplicitly(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
-    [UpdateBefore(typeof(EndFrameBarrier))]
+    [UpdateBefore(typeof(EndSimulationEntityCommandBufferSystem))]
     public sealed class EntityEventSystem : ComponentSystem
     {
         private readonly Dictionary<Type, IEventBatch> types = new Dictionary<Type, IEventBatch>();
@@ -158,7 +158,7 @@ namespace BovineLabs.Entities.Systems
 
             public EventBatch(EntityManager entityManager)
             {
-                this.query = entityManager.CreateComponentGroup(ComponentType.Create<T>());
+                this.query = entityManager.CreateComponentGroup(ComponentType.ReadWrite<T>());
             }
 
             /// <inheritdoc />
