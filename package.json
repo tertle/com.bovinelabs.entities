@@ -1,11 +1,11 @@
 {
     "name": "com.bovinelabs.entities",
     "description": "Collection of extensions, systems and jobs for unity ecs.",
-    "version": "0.1.2",
-    "unity": "2018.3",
+    "version": "0.1.3",
+    "unity": "2019.1",
     "displayName": "BovineLabs.Entities",
     "dependencies": {
-        "com.unity.entities": "0.0.12-preview.23",
+        "com.unity.entities": "0.0.12-preview.29",
 		"com.bovinelabs.naughtyattributes": "https://github.com/tertle/com.bovinelabs.naughtyattributes.git"
     }
 }
