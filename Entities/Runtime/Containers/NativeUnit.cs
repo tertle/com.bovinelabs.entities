@@ -52,7 +52,7 @@ namespace BovineLabs.Entities.Containers
                 throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
             }
 
-            IsBlittableAndThrow();
+            IsUnmanagedAndThrow();
 
             var size = UnsafeUtility.SizeOf<T>();
             this.m_Buffer = UnsafeUtility.Malloc(size, UnsafeUtility.AlignOf<T>(), allocator);
@@ -110,11 +110,12 @@ namespace BovineLabs.Entities.Containers
         }
 
         [BurstDiscard]
-        private static void IsBlittableAndThrow()
+        private static void IsUnmanagedAndThrow()
         {
-            if (!UnsafeUtility.IsBlittable<T>())
+            if (!UnsafeUtility.IsUnmanaged<T>())
             {
-                throw new ArgumentException($"{typeof(T)} used in NativeArray<{typeof(T)}> must be blittable");
+                throw new InvalidOperationException(
+                    $"{(object)typeof(T)} used in NativeArray<{(object)typeof(T)}> must be unmanaged (contain no managed types).");
             }
         }
     }
